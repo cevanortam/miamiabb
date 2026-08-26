@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Meridian | Outbound Audit</title>
+<title>Waypoint | Outbound Audit</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -23,6 +23,24 @@
   ::selection{background:var(--amber);color:#1a1305;}
 
   .topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;border-bottom:1px solid var(--border);background:linear-gradient(180deg, var(--panel), rgba(26,31,39,0.85));position:sticky;top:0;z-index:40;backdrop-filter:blur(6px);}
+  .lang-switch{display:inline-flex;align-items:center;gap:7px;background:none;border:none;cursor:pointer;padding:2px;}
+  .lang-switch-label{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:0.5px;color:var(--muted);transition:color .15s ease;}
+  .lang-switch-label.active{color:var(--amber);}
+  .lang-switch-track{
+    position:relative; width:42px; height:23px; border-radius:14px;
+    background:var(--panel-alt); border:1px solid var(--border); flex:none;
+    transition:border-color .15s ease;
+  }
+  .lang-switch-track.es{border-color:var(--amber-deep);}
+  .lang-switch-knob{
+    position:absolute; top:1px; left:1px; width:19px; height:19px; border-radius:50%;
+    background:#fff; display:flex; align-items:center; justify-content:center;
+    font-size:12px; line-height:1; overflow:hidden;
+    box-shadow:0 1px 3px rgba(0,0,0,0.45);
+    transition:transform .18s ease;
+  }
+  .lang-switch-track.es .lang-switch-knob{ transform:translateX(19px); }
+  .login-card .lang-switch{ justify-content:center; margin-bottom:14px; }
   .brand{display:flex;align-items:center;gap:12px;}
   .brand .logo-badge{height:34px;width:34px;padding:0;border-radius:6px;background:#f5f5f5;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;flex:none;}
   .brand .logo-badge span{font-family:var(--disp);font-weight:700;font-size:14px;color:#12151b;}
@@ -249,37 +267,47 @@
 <div class="login-overlay" id="loginOverlay">
   <div class="login-card">
     <div class="brand">
-      <div class="logo-badge"><span>OA</span></div>
-      <div><h1>Meridian</h1><p>Outbound Audit</p></div>
+      <div class="logo-badge"><span>WP</span></div>
+      <div><h1>Waypoint</h1><p data-i18n="topbar.tagline">Outbound Audit</p></div>
     </div>
-    <h2>Sign in to audit</h2>
+    <h2 data-i18n="login.heading">Sign in to audit</h2>
+    <button class="lang-switch" id="langToggleBtnLogin" type="button" aria-label="Toggle language">
+      <span class="lang-switch-label lang-switch-label-en">EN</span>
+      <span class="lang-switch-track"><span class="lang-switch-knob">🇬🇧</span></span>
+      <span class="lang-switch-label lang-switch-label-es">ES</span>
+    </button>
     <div class="login-error" id="loginError"></div>
     <div class="field">
-      <label for="loginUsername">Username</label>
+      <label for="loginUsername" data-i18n="login.username">Username</label>
       <input type="text" id="loginUsername" autocomplete="username">
     </div>
     <div class="field">
-      <label for="loginPassword">Password</label>
+      <label for="loginPassword" data-i18n="login.password">Password</label>
       <input type="password" id="loginPassword" autocomplete="current-password">
     </div>
-    <button class="btn primary wide" id="loginBtn">Log in</button>
-    <div class="login-hint">First time? Default login is <b>admin / admin</b>.<br>Set up real accounts under Settings after logging in.</div>
+    <button class="btn primary wide" id="loginBtn" data-i18n="login.submit">Log in</button>
+    <div class="login-hint" data-i18n="login.hint">First time? Default login is <b>admin / admin</b>.<br>Set up real accounts under Settings after logging in.</div>
   </div>
 </div>
 
 <div class="topbar">
   <div class="brand">
-    <div class="logo-badge"><span>OA</span></div>
-    <div><h1>Meridian</h1><p>Outbound Audit &middot; Container Scan</p></div>
+    <div class="logo-badge"><span>WP</span></div>
+    <div><h1>Waypoint</h1><p data-i18n="topbar.subtitle">Outbound Audit &middot; Container Scan</p></div>
   </div>
   <div class="topbar-right">
-    <span class="pill" id="sheetSyncPill">Sheet sync: not configured</span>
-    <span class="pill" id="datasetPill">No manifest data loaded</span>
+    <span class="pill" id="sheetSyncPill" data-i18n="sync.notConfigured">Sheet sync: not configured</span>
+    <span class="pill" id="datasetPill" data-i18n="dataset.noneLoaded">No manifest data loaded</span>
     <span class="pill" id="containerPill" hidden></span>
     <span class="pill amber" id="userPill" hidden></span>
-    <button class="btn ghost sm" id="upcTopbarBtn" hidden>UPC Mapping</button>
-    <button class="btn ghost sm" id="settingsTopbarBtn" hidden>&#9881; Settings</button>
-    <button class="btn ghost sm" id="logoutBtn" hidden>Log out</button>
+    <button class="btn ghost sm" id="upcTopbarBtn" hidden data-i18n="topbar.upcBtn">UPC Mapping</button>
+    <button class="btn ghost sm" id="settingsTopbarBtn" hidden>&#9881; <span data-i18n="topbar.settingsBtn">Settings</span></button>
+    <button class="lang-switch" id="langToggleBtn" type="button" aria-label="Toggle language">
+      <span class="lang-switch-label lang-switch-label-en">EN</span>
+      <span class="lang-switch-track"><span class="lang-switch-knob">🇬🇧</span></span>
+      <span class="lang-switch-label lang-switch-label-es">ES</span>
+    </button>
+    <button class="btn ghost sm" id="logoutBtn" hidden data-i18n="topbar.logout">Log out</button>
   </div>
 </div>
 
@@ -288,35 +316,35 @@
   <div class="sidebar">
 
     <div class="card">
-      <h2><span class="num">1</span> Manifest Data</h2>
-      <p class="hint">Uploaded by the clerical team &mdash; the raw picking-activity export, not a manually prepared sheet. Every container in the file becomes scannable below.</p>
+      <h2><span class="num">1</span> <span data-i18n="sidebar.manifest.title">Manifest Data</span></h2>
+      <p class="hint" data-i18n="sidebar.manifest.hint">Uploaded by the clerical team &mdash; the raw picking-activity export, not a manually prepared sheet. Every container in the file becomes scannable below.</p>
       <div class="dropzone" id="datasetDropzone">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
-        <div class="dz-title">Drop picking activity export</div>
-        <div class="dz-sub">.csv or .xlsx &mdash; click to browse</div>
+        <div class="dz-title" data-i18n="dropzone.manifest.title">Drop picking activity export</div>
+        <div class="dz-sub" data-i18n="dropzone.manifest.sub">.csv or .xlsx &mdash; click to browse</div>
         <input type="file" id="datasetInput" accept=".csv,.xlsx,.xls">
       </div>
       <div class="file-status" id="datasetStatus"><span class="dot"></span><span id="datasetStatusText"></span></div>
       <div class="btn-row" style="margin-top:10px;">
-        <button class="btn ghost sm" id="datasetRefreshBtn">&#8635; Refresh from shared sheet</button>
-        <button class="btn ghost sm" id="clearDatasetBtn" style="display:none;">Clear dataset</button>
+        <button class="btn ghost sm" id="datasetRefreshBtn" data-i18n="btn.refreshShared">&#8635; Refresh from shared sheet</button>
+        <button class="btn ghost sm" id="clearDatasetBtn" style="display:none;" data-i18n="btn.clearDataset">Clear dataset</button>
       </div>
     </div>
 
     <div class="card" id="containerCard" hidden>
-      <h2><span class="num">2</span> Active Container</h2>
-      <p class="hint" id="containerCardHint">Scan a container ID in the workspace to begin.</p>
-      <button class="btn ghost wide sm" id="changeContainerBtn" hidden>Change container</button>
+      <h2><span class="num">2</span> <span data-i18n="sidebar.container.title">Active Container</span></h2>
+      <p class="hint" id="containerCardHint" data-i18n="sidebar.container.hintDefault">Scan a container ID in the workspace to begin.</p>
+      <button class="btn ghost wide sm" id="changeContainerBtn" hidden data-i18n="btn.changeContainer">Change container</button>
     </div>
 
     <div class="card">
-      <h2><span class="num">3</span> Productivity</h2>
-      <p class="hint">Start/end timestamps are captured per container audit so you can track time spent.</p>
+      <h2><span class="num">3</span> <span data-i18n="sidebar.productivity.title">Productivity</span></h2>
+      <p class="hint" data-i18n="sidebar.productivity.hint">Start/end timestamps are captured per container audit so you can track time spent.</p>
       <div class="session-timer" id="sessionTimer" hidden>
         <span id="sessionTimerValue">00:00:00</span>
-        <span class="l">Elapsed on current container</span>
+        <span class="l" data-i18n="sessionTimer.label">Elapsed on current container</span>
       </div>
-      <button class="btn ghost wide sm" id="exportProductivityBtn">Export productivity report</button>
+      <button class="btn ghost wide sm" id="exportProductivityBtn" data-i18n="btn.exportProductivity">Export productivity report</button>
     </div>
 
   </div>
@@ -324,13 +352,13 @@
   <div class="workspace">
 
     <div id="containerHero" class="container-hero">
-      <div class="eyebrow">Step 1</div>
-      <h2>Scan the container ID</h2>
-      <p>Scan or type the container ID on this shipment. Its manifest lines will populate automatically from the loaded picking-activity data.</p>
+      <div class="eyebrow" data-i18n="hero.eyebrow">Step 1</div>
+      <h2 data-i18n="hero.heading">Scan the container ID</h2>
+      <p data-i18n="hero.body">Scan or type the container ID on this shipment. Its manifest lines will populate automatically from the loaded picking-activity data.</p>
       <div class="container-scan-wrap">
-        <input type="text" id="containerInput" placeholder="SCAN CONTAINER ID" autocomplete="off" disabled>
+        <input type="text" id="containerInput" placeholder="SCAN CONTAINER ID" autocomplete="off" disabled data-i18n-placeholder="hero.placeholder">
       </div>
-      <div class="dataset-waiting" id="datasetWaitingNote">Waiting on manifest data from the clerical team&hellip;</div>
+      <div class="dataset-waiting" id="datasetWaitingNote" data-i18n="hero.waiting">Waiting on manifest data from the clerical team&hellip;</div>
       <div id="notfoundBox" class="notfound-box" hidden></div>
     </div>
 
@@ -342,124 +370,124 @@
           <div class="cid-sub" id="activeCidSub"></div>
         </div>
         <div class="btn-row">
-          <button class="btn ghost sm" id="changeContainerBtn2">Change container</button>
-          <button class="btn primary sm" id="finishAuditBtn">Finish audit &amp; export PDF</button>
+          <button class="btn ghost sm" id="changeContainerBtn2" data-i18n="btn.changeContainer">Change container</button>
+          <button class="btn primary sm" id="finishAuditBtn" data-i18n="btn.finishAudit">Finish audit &amp; export PDF</button>
         </div>
       </div>
 
-      <div id="pdfUnavailableBanner" class="over-banner" hidden>
+      <div id="pdfUnavailableBanner" class="over-banner" hidden data-i18n="pdfBanner.text">
         &#9888; PDF export library failed to load, so <b>Finish audit</b> can't generate a PDF right now. Check your internet connection and reload the page. (Scanning and Save progress still work normally.)
       </div>
 
       <div class="stats-row">
-        <div class="stat"><div class="n" id="statLines">0/0</div><div class="l">Lines</div></div>
-        <div class="stat"><div class="n" id="statExpected">0</div><div class="l">Expected</div></div>
-        <div class="stat"><div class="n" id="statScanned">0</div><div class="l">Scanned</div></div>
-        <div class="stat" id="statRemainingBox"><div class="n" id="statRemaining">0</div><div class="l">Remaining</div></div>
+        <div class="stat"><div class="n" id="statLines">0/0</div><div class="l" data-i18n="stats.lines">Lines</div></div>
+        <div class="stat"><div class="n" id="statExpected">0</div><div class="l" data-i18n="stats.expected">Expected</div></div>
+        <div class="stat"><div class="n" id="statScanned">0</div><div class="l" data-i18n="stats.scanned">Scanned</div></div>
+        <div class="stat" id="statRemainingBox"><div class="n" id="statRemaining">0</div><div class="l" data-i18n="stats.remaining">Remaining</div></div>
       </div>
       <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
 
       <div class="scan-panel">
-        <label for="scanInput">Scan piece &mdash; SKU or UPC</label>
+        <label for="scanInput" data-i18n="scan.label">Scan piece &mdash; SKU or UPC</label>
         <div class="scan-row">
-          <input type="text" id="scanInput" placeholder="Scan or type a code and press Enter" autocomplete="off">
+          <input type="text" id="scanInput" placeholder="Scan or type a code and press Enter" autocomplete="off" data-i18n-placeholder="scan.placeholder">
           <div class="scan-qty-wrap">
-            <span class="sq-label">Qty</span>
-            <input type="number" id="scanQtyInput" min="1" value="1" title="How many units this scan represents">
+            <span class="sq-label" data-i18n="scan.qtyLabel">Qty</span>
+            <input type="number" id="scanQtyInput" min="1" value="1" title="How many units this scan represents" data-i18n-title="scan.qtyTitle">
           </div>
         </div>
-        <div class="scan-feedback" id="scanFeedback">Ready &mdash; scan the first piece to begin.</div>
+        <div class="scan-feedback" id="scanFeedback" data-i18n="scan.readyDefault">Ready &mdash; scan the first piece to begin.</div>
         <div class="scan-panel-actions">
-          <button class="btn ghost sm" id="undoBtn">&#8630; Undo last scan</button>
+          <button class="btn ghost sm" id="undoBtn" data-i18n="btn.undo">&#8630; Undo last scan</button>
         </div>
       </div>
 
       <div id="overBanner" class="over-banner" hidden></div>
 
       <div class="toolbar">
-        <h3>Manifest</h3>
+        <h3 data-i18n="toolbar.manifestTitle">Manifest</h3>
         <div class="search-box">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#8a94a3" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-          <input type="text" id="tableSearch" placeholder="Filter SKU or description">
+          <input type="text" id="tableSearch" placeholder="Filter SKU or description" data-i18n-placeholder="search.filterSkuDesc">
         </div>
       </div>
       <div class="table-wrap">
         <table class="manifest">
           <thead><tr>
-            <th>SKU</th><th>UPC</th><th>Description</th>
-            <th style="text-align:center">Expected</th>
-            <th style="text-align:center">Scanned</th>
-            <th style="text-align:center">Remaining</th>
-            <th>Status</th><th></th>
+            <th data-i18n="table.sku">SKU</th><th data-i18n="table.upc">UPC</th><th data-i18n="table.description">Description</th>
+            <th style="text-align:center" data-i18n="table.expected">Expected</th>
+            <th style="text-align:center" data-i18n="table.scanned">Scanned</th>
+            <th style="text-align:center" data-i18n="table.remaining">Remaining</th>
+            <th data-i18n="table.status">Status</th><th></th>
           </tr></thead>
           <tbody id="manifestBody"></tbody>
         </table>
       </div>
 
       <div class="log-panel">
-        <h3>Scan activity</h3>
-        <div class="log-list" id="logList"><div class="log-empty">No scans yet.</div></div>
+        <h3 data-i18n="log.title">Scan activity</h3>
+        <div class="log-list" id="logList"><div class="log-empty" data-i18n="log.empty">No scans yet.</div></div>
       </div>
 
       <div class="card" style="margin-top:16px;">
-        <h2 style="margin-bottom:6px;">Done auditing this container?</h2>
-        <p class="hint">Finish audit stops the timer and downloads a PDF report for this container. Save progress just pauses your work so you can resume later &mdash; it does not stop the timer or export anything.</p>
+        <h2 style="margin-bottom:6px;" data-i18n="finishCard.title">Done auditing this container?</h2>
+        <p class="hint" data-i18n="finishCard.hint">Finish audit stops the timer and downloads a PDF report for this container. Save progress just pauses your work so you can resume later &mdash; it does not stop the timer or export anything.</p>
         <div class="btn-row">
-          <button class="btn primary" id="finishAuditBtn2">Finish audit &amp; export PDF</button>
+          <button class="btn primary" id="finishAuditBtn2" data-i18n="btn.finishAudit">Finish audit &amp; export PDF</button>
         </div>
       </div>
 
       <div class="btn-row" style="margin-top:16px;">
-        <button class="btn ghost sm" id="saveProgressBtn">Save progress (pause for later)</button>
-        <button class="btn ghost sm" id="loadProgressBtn">Resume progress</button>
+        <button class="btn ghost sm" id="saveProgressBtn" data-i18n="btn.saveProgress">Save progress (pause for later)</button>
+        <button class="btn ghost sm" id="loadProgressBtn" data-i18n="btn.resumeProgress">Resume progress</button>
         <input type="file" id="progressInput" accept=".json" hidden>
-        <button class="btn ghost sm" id="exportBtn">Export CSV report</button>
+        <button class="btn ghost sm" id="exportBtn" data-i18n="btn.exportCsv">Export CSV report</button>
       </div>
     </div>
 
-    <div class="footer-note">Progress lives in this browser tab only &mdash; save it before closing if you need to resume later.</div>
+    <div class="footer-note" data-i18n="footer.note">Progress lives in this browser tab only &mdash; save it before closing if you need to resume later.</div>
   </div>
 </div>
 
 <div class="modal-overlay hidden" id="upcModalOverlay">
   <div class="modal wide">
     <div class="modal-head">
-      <h3>UPC &rarr; SKU Mapping</h3>
+      <h3 data-i18n="upc.modalTitle">UPC &rarr; SKU Mapping</h3>
       <button class="modal-close" id="upcModalClose">&times;</button>
     </div>
     <div class="modal-body">
-      <p class="hint" style="color:var(--muted);font-size:12.5px;margin:0 0 14px;">
+      <p class="hint" style="color:var(--muted);font-size:12.5px;margin:0 0 14px;" data-i18n="upc.modalIntro">
         When a piece only carries a UPC barcode, scanning that UPC will resolve to its SKU automatically. Upload a bulk file once, then add or correct individual parts any time.
       </p>
 
       <div class="dropzone" id="upcDropzone" style="margin-bottom:14px;">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
-        <div class="dz-title">Bulk upload SKU &harr; UPC file</div>
-        <div class="dz-sub">.csv or .xlsx with SKU and UPC columns</div>
+        <div class="dz-title" data-i18n="dropzone.upc.title">Bulk upload SKU &harr; UPC file</div>
+        <div class="dz-sub" data-i18n="dropzone.upc.sub">.csv or .xlsx with SKU and UPC columns</div>
         <input type="file" id="upcBulkInput" accept=".csv,.xlsx,.xls">
       </div>
       <div class="file-status" id="upcBulkStatus"><span class="dot"></span><span id="upcBulkStatusText"></span></div>
 
-      <div style="margin:16px 0 8px;font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:0.4px;color:var(--muted);">Add / update one part</div>
+      <div style="margin:16px 0 8px;font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:0.4px;color:var(--muted);" data-i18n="upc.addOneLabel">Add / update one part</div>
       <div class="upc-form">
-        <input type="text" id="upcFormSku" placeholder="SKU">
-        <input type="text" id="upcFormUpc" placeholder="UPC">
-        <button class="btn primary sm" id="upcFormAddBtn">Save</button>
+        <input type="text" id="upcFormSku" placeholder="SKU" data-i18n-placeholder="placeholder.sku">
+        <input type="text" id="upcFormUpc" placeholder="UPC" data-i18n-placeholder="placeholder.upc">
+        <button class="btn primary sm" id="upcFormAddBtn" data-i18n="btn.save">Save</button>
       </div>
 
       <div class="search-box" style="margin-bottom:10px;width:220px;">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#8a94a3" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-        <input type="text" id="upcSearch" placeholder="Filter SKU or UPC">
+        <input type="text" id="upcSearch" placeholder="Filter SKU or UPC" data-i18n-placeholder="search.filterSkuUpc">
       </div>
       <div style="max-height:280px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;">
         <table class="packlib" style="width:100%;">
-          <thead><tr><th>SKU</th><th>UPC</th><th></th></tr></thead>
+          <thead><tr><th data-i18n="table.sku">SKU</th><th data-i18n="table.upc">UPC</th><th></th></tr></thead>
           <tbody id="upcTableBody"></tbody>
         </table>
       </div>
       <div class="btn-row" style="margin-top:14px;">
-        <button class="btn ghost sm" id="upcRefreshBtn">&#8635; Refresh from shared sheet</button>
-        <button class="btn ghost sm" id="upcSaveLibBtn">Save mapping file</button>
+        <button class="btn ghost sm" id="upcRefreshBtn" data-i18n="btn.refreshShared">&#8635; Refresh from shared sheet</button>
+        <button class="btn ghost sm" id="upcSaveLibBtn" data-i18n="btn.saveMappingFile">Save mapping file</button>
       </div>
     </div>
   </div>
@@ -468,50 +496,50 @@
 <div class="modal-overlay hidden" id="settingsModalOverlay">
   <div class="modal wide">
     <div class="modal-head">
-      <h3>Settings &mdash; Users</h3>
+      <h3 data-i18n="settings.modalTitle">Settings &mdash; Users</h3>
       <button class="modal-close" id="settingsModalClose">&times;</button>
     </div>
     <div class="modal-body">
 
       <div class="settings-lock" id="settingsLock">
-        <p>Enter the settings password to add, edit, or remove auditor accounts.</p>
+        <p data-i18n="settings.lockPrompt">Enter the settings password to add, edit, or remove auditor accounts.</p>
         <div class="field" style="max-width:260px;margin:0 auto 10px;">
-          <input type="password" id="settingsUnlockInput" placeholder="Settings password">
+          <input type="password" id="settingsUnlockInput" placeholder="Settings password" data-i18n-placeholder="placeholder.settingsPassword">
         </div>
         <div class="login-error" id="settingsUnlockError"></div>
-        <button class="btn primary" id="settingsUnlockBtn">Unlock</button>
+        <button class="btn primary" id="settingsUnlockBtn" data-i18n="btn.unlock">Unlock</button>
       </div>
 
       <div class="settings-unlocked" id="settingsUnlockedPanel">
-        <div style="margin-bottom:8px;font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:0.4px;color:var(--muted);">Auditor accounts</div>
+        <div style="margin-bottom:8px;font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:0.4px;color:var(--muted);" data-i18n="settings.accountsLabel">Auditor accounts</div>
         <div style="max-height:240px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;margin-bottom:14px;">
           <table class="usertable">
-            <thead><tr><th>Username</th><th>Password</th><th></th></tr></thead>
+            <thead><tr><th data-i18n="table.username">Username</th><th data-i18n="table.password">Password</th><th></th></tr></thead>
             <tbody id="userTableBody"></tbody>
           </table>
         </div>
 
-        <div style="margin-bottom:8px;font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:0.4px;color:var(--muted);">Add account</div>
+        <div style="margin-bottom:8px;font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:0.4px;color:var(--muted);" data-i18n="settings.addAccountLabel">Add account</div>
         <div class="upc-form">
-          <input type="text" id="userFormUsername" placeholder="Username">
-          <input type="text" id="userFormPassword" placeholder="Password">
-          <button class="btn primary sm" id="userFormAddBtn">Add</button>
+          <input type="text" id="userFormUsername" placeholder="Username" data-i18n-placeholder="placeholder.username">
+          <input type="text" id="userFormPassword" placeholder="Password" data-i18n-placeholder="placeholder.password">
+          <button class="btn primary sm" id="userFormAddBtn" data-i18n="btn.add">Add</button>
         </div>
 
-        <div style="margin:18px 0 8px;font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:0.4px;color:var(--muted);">Settings password</div>
+        <div style="margin:18px 0 8px;font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:0.4px;color:var(--muted);" data-i18n="settings.passwordLabel">Settings password</div>
         <div class="upc-form" style="grid-template-columns:1fr auto;">
-          <input type="text" id="settingsNewPassword" placeholder="New settings password">
-          <button class="btn ghost sm" id="settingsChangePasswordBtn">Update</button>
+          <input type="text" id="settingsNewPassword" placeholder="New settings password" data-i18n-placeholder="placeholder.newSettingsPassword">
+          <button class="btn ghost sm" id="settingsChangePasswordBtn" data-i18n="btn.update">Update</button>
         </div>
 
         <div class="btn-row" style="margin-top:16px;">
-          <button class="btn ghost sm" id="usersRefreshBtn">&#8635; Refresh from shared sheet</button>
-          <button class="btn ghost sm" id="saveUsersBtn">Save users file</button>
-          <button class="btn ghost sm" id="loadUsersBtn">Load users file</button>
+          <button class="btn ghost sm" id="usersRefreshBtn" data-i18n="btn.refreshShared">&#8635; Refresh from shared sheet</button>
+          <button class="btn ghost sm" id="saveUsersBtn" data-i18n="btn.saveUsersFile">Save users file</button>
+          <button class="btn ghost sm" id="loadUsersBtn" data-i18n="btn.loadUsersFile">Load users file</button>
           <input type="file" id="usersFileInput" accept=".json" hidden>
         </div>
 
-        <div class="security-note">
+        <div class="security-note" data-i18n="settings.securityNote">
           These accounts are for auditor attribution only — not secure authentication. Usernames and passwords are stored in plain text: in this browser's memory, in any exported file, and — if a shared sheet is configured — in that Google Sheet, readable by anyone with the Apps Script URL. Don't reuse a sensitive password here.
         </div>
       </div>
@@ -523,20 +551,21 @@
 <div class="modal-overlay hidden" id="duplicateAuditModalOverlay">
   <div class="modal">
     <div class="modal-head">
-      <h3>Already Audited</h3>
+      <h3 data-i18n="duplicate.title">Already Audited</h3>
       <button class="modal-close" id="duplicateAuditModalClose">&times;</button>
     </div>
     <div class="modal-body">
       <p style="font-size:13.5px;color:var(--text);line-height:1.6;margin:0 0 14px;" id="duplicateAuditMessage"></p>
       <div class="btn-row">
-        <button class="btn primary" id="duplicateAuditAgainBtn">Audit again</button>
-        <button class="btn ghost" id="duplicateAuditBackBtn">Go back</button>
+        <button class="btn primary" id="duplicateAuditAgainBtn" data-i18n="btn.auditAgain">Audit again</button>
+        <button class="btn ghost" id="duplicateAuditBackBtn" data-i18n="btn.goBack">Go back</button>
       </div>
     </div>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
+
 
 <script>
 (function(){
@@ -547,7 +576,7 @@
     // Paste the deployed Google Apps Script Web App URL here to enable shared
     // "already audited" checking and logging across everyone using this file.
     // Leave blank to run fully offline (no duplicate-audit detection, no shared log).
-    sheetsWebAppUrl: ""
+    sheetsWebAppUrl: "https://script.google.com/macros/s/AKfycbyVzwRsq-ZdiVKx9RkR2Q6JCjK7XyFwWl6TrBJBOUa_mMsKPTHWtmqVx6eFCMJGNE-9/exec"
   };
 
   let rawDataset = [];
@@ -569,6 +598,452 @@
   const el = (id) => document.getElementById(id);
   const normCode = (s) => String(s||'').trim().toUpperCase();
 
+  /* ================= LANGUAGE / TRANSLATIONS ================= */
+  let lang = 'en';
+
+  const STRINGS = {
+    en: {
+      'topbar.tagline': 'Outbound Audit',
+      'topbar.subtitle': 'Outbound Audit · Container Scan',
+      'login.heading': 'Sign in to audit',
+      'login.username': 'Username',
+      'login.password': 'Password',
+      'login.submit': 'Log in',
+      'login.hint': 'First time? Default login is <b>admin / admin</b>.<br>Set up real accounts under Settings after logging in.',
+      'login.incorrect': 'Incorrect username or password.',
+      'sync.notConfigured': 'Sheet sync: not configured',
+      'sync.checking': 'Sheet sync: checking…',
+      'sync.error': 'Sheet sync: connection issue',
+      'sync.connected': 'Sheet sync: connected',
+      'dataset.noneLoaded': 'No manifest data loaded',
+      'container.pillPrefix': 'Container {cid}',
+      'user.signedInPrefix': 'Signed in: {user}',
+      'topbar.upcBtn': 'UPC Mapping',
+      'topbar.upcBtnCount': 'UPC Mapping ({count})',
+      'topbar.settingsBtn': 'Settings',
+      'topbar.logout': 'Log out',
+      'sidebar.manifest.title': 'Manifest Data',
+      'sidebar.manifest.hint': 'Uploaded by the clerical team — the raw picking-activity export, not a manually prepared sheet. Every container in the file becomes scannable below.',
+      'dropzone.manifest.title': 'Drop picking activity export',
+      'dropzone.manifest.sub': '.csv or .xlsx — click to browse',
+      'btn.refreshShared': '↺ Refresh from shared sheet',
+      'btn.clearDataset': 'Clear dataset',
+      'sidebar.container.title': 'Active Container',
+      'sidebar.container.hintDefault': 'Scan a container ID in the workspace to begin.',
+      'sidebar.container.hintActive': 'Auditing container {cid}.',
+      'btn.changeContainer': 'Change container',
+      'sidebar.productivity.title': 'Productivity',
+      'sidebar.productivity.hint': 'Start/end timestamps are captured per container audit so you can track time spent.',
+      'sessionTimer.label': 'Elapsed on current container',
+      'btn.exportProductivity': 'Export productivity report',
+      'hero.eyebrow': 'Step 1',
+      'hero.heading': 'Scan the container ID',
+      'hero.body': 'Scan or type the container ID on this shipment. Its manifest lines will populate automatically from the loaded picking-activity data.',
+      'hero.placeholder': 'SCAN CONTAINER ID',
+      'hero.waiting': 'Waiting on manifest data from the clerical team…',
+      'btn.finishAudit': 'Finish audit & export PDF',
+      'pdfBanner.text': '⚠ PDF export library failed to load, so <b>Finish audit</b> can\'t generate a PDF right now. Check your internet connection and reload the page. (Scanning and Save progress still work normally.)',
+      'stats.lines': 'Lines',
+      'stats.expected': 'Expected',
+      'stats.scanned': 'Scanned',
+      'stats.remaining': 'Remaining',
+      'scan.label': 'Scan piece — SKU or UPC',
+      'scan.placeholder': 'Scan or type a code and press Enter',
+      'scan.qtyLabel': 'Qty',
+      'scan.qtyTitle': 'How many units this scan represents',
+      'scan.readyDefault': 'Ready — scan the first piece to begin.',
+      'btn.undo': '↺ Undo last scan',
+      'toolbar.manifestTitle': 'Manifest',
+      'search.filterSkuDesc': 'Filter SKU or description',
+      'search.filterSkuUpc': 'Filter SKU or UPC',
+      'table.sku': 'SKU',
+      'table.upc': 'UPC',
+      'table.description': 'Description',
+      'table.expected': 'Expected',
+      'table.scanned': 'Scanned',
+      'table.remaining': 'Remaining',
+      'table.status': 'Status',
+      'table.username': 'Username',
+      'table.password': 'Password',
+      'log.title': 'Scan activity',
+      'log.empty': 'No scans yet.',
+      'finishCard.title': 'Done auditing this container?',
+      'finishCard.hint': 'Finish audit stops the timer and downloads a PDF report for this container. Save progress just pauses your work so you can resume later — it does not stop the timer or export anything.',
+      'btn.saveProgress': 'Save progress (pause for later)',
+      'btn.resumeProgress': 'Resume progress',
+      'btn.exportCsv': 'Export CSV report',
+      'footer.note': 'Progress lives in this browser tab only — save it before closing if you need to resume later.',
+      'upc.modalTitle': 'UPC → SKU Mapping',
+      'upc.modalIntro': 'When a piece only carries a UPC barcode, scanning that UPC will resolve to its SKU automatically. Upload a bulk file once, then add or correct individual parts any time.',
+      'dropzone.upc.title': 'Bulk upload SKU ↔ UPC file',
+      'dropzone.upc.sub': '.csv or .xlsx with SKU and UPC columns',
+      'upc.addOneLabel': 'Add / update one part',
+      'placeholder.sku': 'SKU',
+      'placeholder.upc': 'UPC',
+      'btn.save': 'Save',
+      'btn.saveMappingFile': 'Save mapping file',
+      'settings.modalTitle': 'Settings — Users',
+      'settings.lockPrompt': 'Enter the settings password to add, edit, or remove auditor accounts.',
+      'placeholder.settingsPassword': 'Settings password',
+      'btn.unlock': 'Unlock',
+      'settings.incorrectPassword': 'Incorrect settings password.',
+      'settings.accountsLabel': 'Auditor accounts',
+      'settings.addAccountLabel': 'Add account',
+      'placeholder.username': 'Username',
+      'placeholder.password': 'Password',
+      'btn.add': 'Add',
+      'settings.passwordLabel': 'Settings password',
+      'placeholder.newSettingsPassword': 'New settings password',
+      'btn.update': 'Update',
+      'btn.saveUsersFile': 'Save users file',
+      'btn.loadUsersFile': 'Load users file',
+      'settings.securityNote': 'These accounts are for auditor attribution only — not secure authentication. Usernames and passwords are stored in plain text: in this browser\'s memory, in any exported file, and — if a shared sheet is configured — in that Google Sheet, readable by anyone with the Apps Script URL. Don\'t reuse a sensitive password here.',
+      'duplicate.title': 'Already Audited',
+      'duplicate.message': 'Container <b>{cid}</b> was already audited by <b>{who}</b> on {when}{countNote}. Auditing it again won\'t overwrite that record — it will simply add a new entry to the shared log.',
+      'duplicate.countNote': ' (audited {count} times total)',
+      'btn.auditAgain': 'Audit again',
+      'btn.goBack': 'Go back',
+      'lang.toggleLabel': 'ES',
+
+      // dynamic / toast / status strings
+      'dataset.notLoadedYet': 'Manifest data has not been loaded yet.',
+      'dataset.emptyShared': 'Shared manifest data is empty — nothing to load yet.',
+      'dataset.loadedFromSheetToast': 'Manifest data loaded from the shared sheet.',
+      'dataset.loadedFromFileStatus': '{count} line{s1} across {containers} container{s2} loaded.',
+      'dataset.loadedFromFileStatusShared': '{count} line{s1} across {containers} container{s2} loaded from the shared sheet.',
+      'manifest.parseError': 'Could not parse this file: {err}',
+      'manifest.noUsableRows': 'No usable Container ID / SKU / Qty rows found.',
+      'manifest.localOnlyToast': 'Manifest data loaded.',
+      'manifest.sharedOkToast': 'Manifest data loaded and shared with everyone.',
+      'manifest.sharedFailToast': 'Manifest data loaded, but sharing it failed (check your connection).',
+      'upc.bulkStatus': '{count} mapping{s} loaded.',
+      'upc.noUsableRows': 'No usable SKU / UPC rows found.',
+      'upc.localOnlyToast': 'UPC mapping updated.',
+      'upc.sharedOkToast': 'UPC mapping updated and shared with everyone.',
+      'upc.sharedFailToast': 'UPC mapping updated, but sharing it failed (check your connection).',
+      'upc.pulledToast': '{count} UPC mapping{s} loaded from the shared sheet.',
+      'upc.needBoth': 'Enter both a SKU and a UPC.',
+      'upc.mappingSavedLocal': 'Mapping saved.',
+      'upc.mappingSavedShared': 'Mapping saved and shared with everyone.',
+      'upc.mappingSavedFail': 'Mapping saved locally, but sharing it failed (check your connection).',
+      'users.pulledToast': '{count} account{s} loaded from the shared sheet.',
+      'users.needBoth': 'Enter both a username and a password.',
+      'users.usernameExists': 'That username already exists.',
+      'users.atLeastOne': 'At least one account must remain.',
+      'users.accountAdded': 'Account added.',
+      'users.needNewPassword': 'Enter a new settings password.',
+      'users.passwordUpdated': 'Settings password updated.',
+      'users.fileLoaded': '{count} account{s} loaded.',
+      'users.notAFile': 'File does not look like a saved users file.',
+      'users.loadError': 'Could not load that users file: {err}',
+      'status.pending': 'Pending',
+      'status.progress': 'In progress',
+      'status.complete': 'Complete',
+      'status.over': 'Over +{n}',
+      'scan.matchedTitle': 'Matched {sku}',
+      'scan.remainingOfExpected': '+{count} — {remaining} of {expected} remaining',
+      'scan.overTitle': 'Over-scanned {sku}',
+      'scan.overSub': '+{count} pushed it {over} past expected',
+      'scan.unknownTitle': 'Unknown code',
+      'scan.noMatchDetail': 'No matching SKU on manifest',
+      'scan.undoneTitle': 'Last scan undone',
+      'scan.nothingToUndo': 'Nothing to undo',
+      'container.switchConfirm': 'Switch containers? Unsaved progress on this container will be lost.',
+      'container.notFoundTitle': 'Container {cid} was not found in the currently loaded manifest data.',
+      'container.notFoundTitleRest': 'was not found in the currently loaded manifest data.',
+      'container.notFoundBody': "This usually means the clerical team hasn't uploaded data for it yet.",
+      'container.notFoundEmailBtn': 'Draft email to update this container',
+      'container.notFoundCopyBtn': 'Copy details',
+      'container.copiedToast': 'Copied.',
+      'container.copyFailedToast': 'Could not copy.',
+      'audit.finishConfirmPrefix': 'Finish audit for container {cid}?',
+      'audit.finishConfirmWarn': '\n\nHeads up: {n} line{s} {verb} not at expected quantity{overNote}. The PDF will reflect this as-is.',
+      'audit.finishConfirmOverNote': ' ({n} unit{s} over)',
+      'audit.pdfLibMissingToast': 'PDF library did not load — check your internet connection, reload the page, and try again.',
+      'audit.pdfGenFailedToast': 'PDF generation failed: {err}',
+      'audit.finishedLocalOnly': 'Audit finished — PDF saved to your downloads.',
+      'audit.finishedSharedOk': 'Audit finished — PDF saved and logged to the shared sheet.',
+      'audit.finishedSharedFail': 'Audit finished — PDF saved, but the shared sheet log failed (check your connection).',
+      'export.noSessions': 'No container sessions recorded yet.',
+      'progress.notAFile': 'File does not look like a saved progress file.',
+      'progress.loadError': 'Could not load that progress file: {err}',
+      'pdf.title': 'Outbound Audit Report',
+      'pdf.containerId': 'Container ID',
+      'pdf.auditedBy': 'Audited by (user ID)',
+      'pdf.startTime': 'Start time',
+      'pdf.endTime': 'End time',
+      'pdf.totalDuration': 'Total duration',
+      'pdf.reportGenerated': 'Report generated',
+      'pdf.summary': 'Summary',
+      'pdf.summaryLine': '{n} line{s} — {expected} expected, {scanned} scanned, {remaining} remaining{overNote}',
+      'pdf.summaryOverNote': ', {n} over',
+      'pdf.unknownUser': 'Unknown',
+      'sync.sharedDataLoaded': 'Shared manifest and UPC data loaded.',
+      'users.noAccountsYet': 'No accounts yet.',
+      'upc.noMappingsYet': 'No UPC mappings yet.',
+      'table.noLinesMatch': 'No lines match "{filter}"',
+      'table.noManifestLines': 'No manifest lines.',
+      'dataset.containersLoadedPill': '{n} containers loaded',
+      'container.linesOnManifest': '{n} SKU line{s} on manifest',
+      'scan.logOver': '{sku} — +{count} — {over} over',
+      'scan.logOk': '{sku} — +{count} — {remaining} left',
+      'btn.removeOneUnit': 'Remove one unit',
+      'btn.remove': 'Remove',
+      'btn.addOneUnit': 'Add one unit manually',
+    },
+    es: {
+      'topbar.tagline': 'Auditoría de Salida',
+      'topbar.subtitle': 'Auditoría de Salida · Escaneo de Contenedor',
+      'login.heading': 'Iniciar sesión para auditar',
+      'login.username': 'Usuario',
+      'login.password': 'Contraseña',
+      'login.submit': 'Iniciar sesión',
+      'login.hint': '¿Primera vez? El inicio de sesión predeterminado es <b>admin / admin</b>.<br>Configure cuentas reales en Configuración después de iniciar sesión.',
+      'login.incorrect': 'Usuario o contraseña incorrectos.',
+      'sync.notConfigured': 'Sincronización: no configurada',
+      'sync.checking': 'Sincronización: verificando…',
+      'sync.error': 'Sincronización: problema de conexión',
+      'sync.connected': 'Sincronización: conectada',
+      'dataset.noneLoaded': 'No hay datos de manifiesto cargados',
+      'container.pillPrefix': 'Contenedor {cid}',
+      'user.signedInPrefix': 'Sesión iniciada: {user}',
+      'topbar.upcBtn': 'Mapeo de UPC',
+      'topbar.upcBtnCount': 'Mapeo de UPC ({count})',
+      'topbar.settingsBtn': 'Configuración',
+      'topbar.logout': 'Cerrar sesión',
+      'sidebar.manifest.title': 'Datos del Manifiesto',
+      'sidebar.manifest.hint': 'Cargado por el equipo administrativo — la exportación bruta de actividad de picking, no una hoja preparada manualmente. Cada contenedor del archivo queda disponible para escanear abajo.',
+      'dropzone.manifest.title': 'Suelte la exportación de actividad de picking',
+      'dropzone.manifest.sub': '.csv o .xlsx — clic para buscar',
+      'btn.refreshShared': '↺ Actualizar desde la hoja compartida',
+      'btn.clearDataset': 'Borrar datos',
+      'sidebar.container.title': 'Contenedor Activo',
+      'sidebar.container.hintDefault': 'Escanee un ID de contenedor en el área de trabajo para comenzar.',
+      'sidebar.container.hintActive': 'Auditando el contenedor {cid}.',
+      'btn.changeContainer': 'Cambiar contenedor',
+      'sidebar.productivity.title': 'Productividad',
+      'sidebar.productivity.hint': 'Se registran las marcas de tiempo de inicio/fin por cada auditoría de contenedor para que pueda medir el tiempo dedicado.',
+      'sessionTimer.label': 'Tiempo transcurrido en el contenedor actual',
+      'btn.exportProductivity': 'Exportar informe de productividad',
+      'hero.eyebrow': 'Paso 1',
+      'hero.heading': 'Escanee el ID del contenedor',
+      'hero.body': 'Escanee o escriba el ID del contenedor de este envío. Las líneas del manifiesto se completarán automáticamente con los datos de picking cargados.',
+      'hero.placeholder': 'ESCANEE EL ID DEL CONTENEDOR',
+      'hero.waiting': 'Esperando los datos del manifiesto del equipo administrativo…',
+      'btn.finishAudit': 'Finalizar auditoría y exportar PDF',
+      'pdfBanner.text': '⚠ La librería de exportación de PDF no se cargó, así que <b>Finalizar auditoría</b> no puede generar un PDF en este momento. Verifique su conexión a internet y recargue la página. (El escaneo y Guardar progreso siguen funcionando con normalidad.)',
+      'stats.lines': 'Líneas',
+      'stats.expected': 'Esperado',
+      'stats.scanned': 'Escaneado',
+      'stats.remaining': 'Restante',
+      'scan.label': 'Escanear pieza — SKU o UPC',
+      'scan.placeholder': 'Escanee o escriba un código y presione Enter',
+      'scan.qtyLabel': 'Cant.',
+      'scan.qtyTitle': 'Cuántas unidades representa este escaneo',
+      'scan.readyDefault': 'Listo — escanee la primera pieza para comenzar.',
+      'btn.undo': '↺ Deshacer último escaneo',
+      'toolbar.manifestTitle': 'Manifiesto',
+      'search.filterSkuDesc': 'Filtrar por SKU o descripción',
+      'search.filterSkuUpc': 'Filtrar por SKU o UPC',
+      'table.sku': 'SKU',
+      'table.upc': 'UPC',
+      'table.description': 'Descripción',
+      'table.expected': 'Esperado',
+      'table.scanned': 'Escaneado',
+      'table.remaining': 'Restante',
+      'table.status': 'Estado',
+      'table.username': 'Usuario',
+      'table.password': 'Contraseña',
+      'log.title': 'Actividad de escaneo',
+      'log.empty': 'Aún no hay escaneos.',
+      'finishCard.title': '¿Terminó de auditar este contenedor?',
+      'finishCard.hint': 'Finalizar auditoría detiene el cronómetro y descarga un informe en PDF de este contenedor. Guardar progreso solo pausa su trabajo para poder continuar más tarde — no detiene el cronómetro ni exporta nada.',
+      'btn.saveProgress': 'Guardar progreso (pausar para después)',
+      'btn.resumeProgress': 'Reanudar progreso',
+      'btn.exportCsv': 'Exportar informe CSV',
+      'footer.note': 'El progreso solo existe en esta pestaña del navegador — guárdelo antes de cerrar si necesita continuar más tarde.',
+      'upc.modalTitle': 'Mapeo de UPC → SKU',
+      'upc.modalIntro': 'Cuando una pieza solo tiene un código de barras UPC, escanear ese UPC lo resolverá automáticamente a su SKU. Cargue un archivo masivo una vez, luego agregue o corrija piezas individuales en cualquier momento.',
+      'dropzone.upc.title': 'Carga masiva de archivo SKU ↔ UPC',
+      'dropzone.upc.sub': '.csv o .xlsx con columnas SKU y UPC',
+      'upc.addOneLabel': 'Agregar / actualizar una pieza',
+      'placeholder.sku': 'SKU',
+      'placeholder.upc': 'UPC',
+      'btn.save': 'Guardar',
+      'btn.saveMappingFile': 'Guardar archivo de mapeo',
+      'settings.modalTitle': 'Configuración — Usuarios',
+      'settings.lockPrompt': 'Ingrese la contraseña de configuración para agregar, editar o eliminar cuentas de auditores.',
+      'placeholder.settingsPassword': 'Contraseña de configuración',
+      'btn.unlock': 'Desbloquear',
+      'settings.incorrectPassword': 'Contraseña de configuración incorrecta.',
+      'settings.accountsLabel': 'Cuentas de auditores',
+      'settings.addAccountLabel': 'Agregar cuenta',
+      'placeholder.username': 'Usuario',
+      'placeholder.password': 'Contraseña',
+      'btn.add': 'Agregar',
+      'settings.passwordLabel': 'Contraseña de configuración',
+      'placeholder.newSettingsPassword': 'Nueva contraseña de configuración',
+      'btn.update': 'Actualizar',
+      'btn.saveUsersFile': 'Guardar archivo de usuarios',
+      'btn.loadUsersFile': 'Cargar archivo de usuarios',
+      'settings.securityNote': 'Estas cuentas son solo para atribución del auditor — no son autenticación segura. Los usuarios y contraseñas se guardan en texto plano: en la memoria de este navegador, en cualquier archivo exportado y — si hay una hoja compartida configurada — en esa Hoja de Google, legible por cualquiera que tenga la URL del Apps Script. No reutilice una contraseña sensible aquí.',
+      'duplicate.title': 'Ya Auditado',
+      'duplicate.message': 'El contenedor <b>{cid}</b> ya fue auditado por <b>{who}</b> el {when}{countNote}. Auditarlo de nuevo no sobrescribirá ese registro — simplemente agregará una nueva entrada al registro compartido.',
+      'duplicate.countNote': ' (auditado {count} veces en total)',
+      'btn.auditAgain': 'Auditar de nuevo',
+      'btn.goBack': 'Volver',
+      'lang.toggleLabel': 'EN',
+
+      'dataset.notLoadedYet': 'Los datos del manifiesto aún no se han cargado.',
+      'dataset.emptyShared': 'Los datos del manifiesto compartido están vacíos — nada que cargar todavía.',
+      'dataset.loadedFromSheetToast': 'Datos del manifiesto cargados desde la hoja compartida.',
+      'dataset.loadedFromFileStatus': '{count} línea{s1} en {containers} contenedor{s2} cargados.',
+      'dataset.loadedFromFileStatusShared': '{count} línea{s1} en {containers} contenedor{s2} cargados desde la hoja compartida.',
+      'manifest.parseError': 'No se pudo procesar este archivo: {err}',
+      'manifest.noUsableRows': 'No se encontraron filas utilizables de ID de contenedor / SKU / Cantidad.',
+      'manifest.localOnlyToast': 'Datos del manifiesto cargados.',
+      'manifest.sharedOkToast': 'Datos del manifiesto cargados y compartidos con todos.',
+      'manifest.sharedFailToast': 'Datos del manifiesto cargados, pero no se pudieron compartir (verifique su conexión).',
+      'upc.bulkStatus': '{count} mapeo{s} cargado{s}.',
+      'upc.noUsableRows': 'No se encontraron filas utilizables de SKU / UPC.',
+      'upc.localOnlyToast': 'Mapeo de UPC actualizado.',
+      'upc.sharedOkToast': 'Mapeo de UPC actualizado y compartido con todos.',
+      'upc.sharedFailToast': 'Mapeo de UPC actualizado, pero no se pudo compartir (verifique su conexión).',
+      'upc.pulledToast': '{count} mapeo{s} de UPC cargado{s} desde la hoja compartida.',
+      'upc.needBoth': 'Ingrese tanto el SKU como el UPC.',
+      'upc.mappingSavedLocal': 'Mapeo guardado.',
+      'upc.mappingSavedShared': 'Mapeo guardado y compartido con todos.',
+      'upc.mappingSavedFail': 'Mapeo guardado localmente, pero no se pudo compartir (verifique su conexión).',
+      'users.pulledToast': '{count} cuenta{s} cargada{s} desde la hoja compartida.',
+      'users.needBoth': 'Ingrese tanto el usuario como la contraseña.',
+      'users.usernameExists': 'Ese nombre de usuario ya existe.',
+      'users.atLeastOne': 'Debe quedar al menos una cuenta.',
+      'users.accountAdded': 'Cuenta agregada.',
+      'users.needNewPassword': 'Ingrese una nueva contraseña de configuración.',
+      'users.passwordUpdated': 'Contraseña de configuración actualizada.',
+      'users.fileLoaded': '{count} cuenta{s} cargada{s}.',
+      'users.notAFile': 'Este archivo no parece ser un archivo de usuarios guardado.',
+      'users.loadError': 'No se pudo cargar ese archivo de usuarios: {err}',
+      'status.pending': 'Pendiente',
+      'status.progress': 'En progreso',
+      'status.complete': 'Completo',
+      'status.over': 'Excedido +{n}',
+      'scan.matchedTitle': 'Coincide con {sku}',
+      'scan.remainingOfExpected': '+{count} — {remaining} de {expected} restantes',
+      'scan.overTitle': 'Escaneo excedido {sku}',
+      'scan.overSub': '+{count} lo llevó {over} por encima de lo esperado',
+      'scan.unknownTitle': 'Código desconocido',
+      'scan.noMatchDetail': 'No coincide con ningún SKU del manifiesto',
+      'scan.undoneTitle': 'Último escaneo deshecho',
+      'scan.nothingToUndo': 'Nada que deshacer',
+      'container.switchConfirm': '¿Cambiar de contenedor? Se perderá el progreso no guardado de este contenedor.',
+      'container.notFoundTitle': 'El contenedor {cid} no se encontró en los datos del manifiesto cargados actualmente.',
+      'container.notFoundTitleRest': 'no se encontró en los datos del manifiesto cargados actualmente.',
+      'container.notFoundBody': 'Esto generalmente significa que el equipo administrativo aún no ha cargado los datos para este contenedor.',
+      'container.notFoundEmailBtn': 'Redactar correo para actualizar este contenedor',
+      'container.notFoundCopyBtn': 'Copiar detalles',
+      'container.copiedToast': 'Copiado.',
+      'container.copyFailedToast': 'No se pudo copiar.',
+      'audit.finishConfirmPrefix': '¿Finalizar la auditoría del contenedor {cid}?',
+      'audit.finishConfirmWarn': '\n\nAviso: {n} línea{s} no {verb} en la cantidad esperada{overNote}. El PDF reflejará esto tal cual.',
+      'audit.finishConfirmOverNote': ' ({n} unidad{s} de exceso)',
+      'audit.pdfLibMissingToast': 'La librería de PDF no se cargó — verifique su conexión a internet, recargue la página e intente de nuevo.',
+      'audit.pdfGenFailedToast': 'Error al generar el PDF: {err}',
+      'audit.finishedLocalOnly': 'Auditoría finalizada — PDF guardado en sus descargas.',
+      'audit.finishedSharedOk': 'Auditoría finalizada — PDF guardado y registrado en la hoja compartida.',
+      'audit.finishedSharedFail': 'Auditoría finalizada — PDF guardado, pero el registro en la hoja compartida falló (verifique su conexión).',
+      'export.noSessions': 'Aún no hay sesiones de contenedor registradas.',
+      'progress.notAFile': 'Este archivo no parece ser un archivo de progreso guardado.',
+      'progress.loadError': 'No se pudo cargar ese archivo de progreso: {err}',
+      'pdf.title': 'Informe de Auditoría de Salida',
+      'pdf.containerId': 'ID de contenedor',
+      'pdf.auditedBy': 'Auditado por (ID de usuario)',
+      'pdf.startTime': 'Hora de inicio',
+      'pdf.endTime': 'Hora de finalización',
+      'pdf.totalDuration': 'Duración total',
+      'pdf.reportGenerated': 'Informe generado',
+      'pdf.summary': 'Resumen',
+      'pdf.summaryLine': '{n} línea{s} — {expected} esperado, {scanned} escaneado, {remaining} restante{overNote}',
+      'pdf.summaryOverNote': ', {n} de exceso',
+      'pdf.unknownUser': 'Desconocido',
+      'sync.sharedDataLoaded': 'Datos compartidos de manifiesto y UPC cargados.',
+      'users.noAccountsYet': 'Aún no hay cuentas.',
+      'upc.noMappingsYet': 'Aún no hay mapeos de UPC.',
+      'table.noLinesMatch': 'Ninguna línea coincide con "{filter}"',
+      'table.noManifestLines': 'No hay líneas de manifiesto.',
+      'dataset.containersLoadedPill': '{n} contenedores cargados',
+      'container.linesOnManifest': '{n} línea{s} de SKU en el manifiesto',
+      'scan.logOver': '{sku} — +{count} — {over} de exceso',
+      'scan.logOk': '{sku} — +{count} — {remaining} restante',
+      'btn.removeOneUnit': 'Quitar una unidad',
+      'btn.remove': 'Quitar',
+      'btn.addOneUnit': 'Agregar una unidad manualmente',
+    }
+  };
+
+  function t(key, vars){
+    let str = (STRINGS[lang] && STRINGS[lang][key]) || STRINGS.en[key] || key;
+    if(vars){
+      Object.keys(vars).forEach(k => {
+        str = str.split('{' + k + '}').join(vars[k]);
+      });
+    }
+    return str;
+  }
+
+  function applyStaticTranslations(){
+    document.querySelectorAll('[data-i18n]').forEach(node => {
+      const key = node.getAttribute('data-i18n');
+      node.innerHTML = t(key);
+    });
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(node => {
+      node.setAttribute('placeholder', t(node.getAttribute('data-i18n-placeholder')));
+    });
+    document.querySelectorAll('[data-i18n-title]').forEach(node => {
+      node.setAttribute('title', t(node.getAttribute('data-i18n-title')));
+    });
+  }
+
+  function updateLangSwitchVisual(){
+    const flag = lang === 'es' ? '🇪🇸' : '🇬🇧';
+    document.querySelectorAll('.lang-switch').forEach(sw => {
+      const track = sw.querySelector('.lang-switch-track');
+      const knob = sw.querySelector('.lang-switch-knob');
+      const labelEn = sw.querySelector('.lang-switch-label-en');
+      const labelEs = sw.querySelector('.lang-switch-label-es');
+      knob.textContent = flag;
+      track.classList.toggle('es', lang === 'es');
+      labelEn.classList.toggle('active', lang === 'en');
+      labelEs.classList.toggle('active', lang === 'es');
+    });
+  }
+
+  function setLanguage(newLang){
+    lang = newLang;
+    document.documentElement.lang = lang;
+    applyStaticTranslations();
+    updateLangSwitchVisual();
+
+    // re-render whatever dynamic content is currently visible so it reflects the new language too
+    if(!el('sheetSyncPill')) return;
+    initSyncStatus();
+    if(items && items.length){ renderStats(); renderManifestTable(currentFilter()); renderLog(); }
+    if(el('settingsUnlockedPanel').classList.contains('show')) renderUserTable();
+    if(!el('upcModalOverlay').classList.contains('hidden')) renderUpcTable(el('upcSearch') ? el('upcSearch').value : '');
+    renderUpcTile();
+    if(currentContainerId && !el('auditWorkspace').hidden){
+      el('containerCardHint').textContent = t('sidebar.container.hintActive', { cid: currentContainerId });
+      el('containerPill').textContent = t('container.pillPrefix', { cid: currentContainerId });
+    }
+    if(currentUser && el('userPill') && !el('userPill').hidden){
+      el('userPill').textContent = t('user.signedInPrefix', { user: currentUser });
+    }
+  }
+
+  function toggleLanguage(){
+    setLanguage(lang === 'en' ? 'es' : 'en');
+  }
+
   /* ================= AUTH ================= */
   function attemptLogin(username, password){
     const u = String(username||'').trim();
@@ -576,7 +1051,7 @@
     const match = users.find(x => x.username.toLowerCase() === u.toLowerCase() && x.password === p);
     if(!match){
       const errBox = el('loginError');
-      errBox.textContent = 'Incorrect username or password.';
+      errBox.textContent = t('login.incorrect');
       errBox.classList.add('show');
       return false;
     }
@@ -584,7 +1059,7 @@
     el('loginError').classList.remove('show');
     el('loginOverlay').classList.add('hidden');
     el('userPill').hidden = false;
-    el('userPill').textContent = 'Signed in: ' + currentUser;
+    el('userPill').textContent = t('user.signedInPrefix', { user: currentUser });
     el('upcTopbarBtn').hidden = false;
     el('settingsTopbarBtn').hidden = false;
     el('logoutBtn').hidden = false;
@@ -593,7 +1068,7 @@
 
     if(sheetSyncConfigured()){
       Promise.all([pullManifestFromSheet(true), pullUpcMapFromSheet(true)]).then(([manifestOk, upcOk]) => {
-        if(manifestOk || upcOk) toast('Shared manifest and UPC data loaded.');
+        if(manifestOk || upcOk) toast(t('sync.sharedDataLoaded'));
       });
     }
     return true;
@@ -628,7 +1103,7 @@
     const val = el('settingsUnlockInput').value;
     if(val !== settingsPassword){
       const err = el('settingsUnlockError');
-      err.textContent = 'Incorrect settings password.';
+      err.textContent = t('settings.incorrectPassword');
       err.classList.add('show');
       return;
     }
@@ -640,14 +1115,14 @@
   function renderUserTable(){
     const body = el('userTableBody');
     if(users.length === 0){
-      body.innerHTML = `<tr><td colspan="3" class="lib-empty">No accounts yet.</td></tr>`;
+      body.innerHTML = `<tr><td colspan="3" class="lib-empty">${t('users.noAccountsYet')}</td></tr>`;
       return;
     }
     body.innerHTML = users.map((u, i) => `
       <tr>
         <td><input type="text" data-useridx="${i}" data-field="username" value="${escapeHtml(u.username)}"></td>
         <td><input type="text" data-useridx="${i}" data-field="password" value="${escapeHtml(u.password)}"></td>
-        <td><button class="mini-btn" data-userremove="${i}" title="Remove">&times;</button></td>
+        <td><button class="mini-btn" data-userremove="${i}" title="${t('btn.remove')}">&times;</button></td>
       </tr>
     `).join('');
     body.querySelectorAll('input[data-useridx]').forEach(inp=>{
@@ -662,7 +1137,7 @@
     });
     body.querySelectorAll('[data-userremove]').forEach(btn=>{
       btn.addEventListener('click', () => {
-        if(users.length <= 1){ toast('At least one account must remain.', true); return; }
+        if(users.length <= 1){ toast(t('users.atLeastOne'), true); return; }
         users.splice(parseInt(btn.dataset.userremove, 10), 1);
         renderUserTable();
         pushUsersToSheet();
@@ -673,38 +1148,38 @@
   function addUser(username, password){
     const u = String(username||'').trim();
     const p = String(password||'').trim();
-    if(!u || !p){ toast('Enter both a username and a password.', true); return; }
-    if(users.some(x => x.username.toLowerCase() === u.toLowerCase())){ toast('That username already exists.', true); return; }
+    if(!u || !p){ toast(t('users.needBoth'), true); return; }
+    if(users.some(x => x.username.toLowerCase() === u.toLowerCase())){ toast(t('users.usernameExists'), true); return; }
     users.push({ username: u, password: p });
     renderUserTable();
-    toast('Account added.');
+    toast(t('users.accountAdded'));
     pushUsersToSheet();
   }
 
   function changeSettingsPassword(newPassword){
     const p = String(newPassword||'').trim();
-    if(!p){ toast('Enter a new settings password.', true); return; }
+    if(!p){ toast(t('users.needNewPassword'), true); return; }
     settingsPassword = p;
     el('settingsNewPassword').value = '';
-    toast('Settings password updated.');
+    toast(t('users.passwordUpdated'));
     pushUsersToSheet();
   }
 
   function saveUsersFile(){
-    downloadText(JSON.stringify({ savedAt: new Date().toISOString(), users, settingsPassword }, null, 2), `audit-users-${timestamp()}.json`, 'application/json');
+    downloadText(JSON.stringify({ savedAt: new Date().toISOString(), users, settingsPassword }, null, 2), `waypoint-users-${timestamp()}.json`, 'application/json');
   }
   function loadUsersFile(file){
     const reader = new FileReader();
     reader.onload = (e) => {
       try{
         const snap = JSON.parse(e.target.result);
-        if(!Array.isArray(snap.users) || snap.users.length === 0) throw new Error('File does not look like a saved users file.');
+        if(!Array.isArray(snap.users) || snap.users.length === 0) throw new Error(t('users.notAFile'));
         users = snap.users;
         if(snap.settingsPassword) settingsPassword = snap.settingsPassword;
         renderUserTable();
-        toast(`${users.length} account${users.length===1?'':'s'} loaded.`);
+        toast(t('users.fileLoaded', { count: users.length, s: users.length===1?'':'s' }));
       }catch(err){
-        toast('Could not load that users file: ' + err.message, true);
+        toast(t('users.loadError', { err: err.message }), true);
       }
     };
     reader.readAsText(file);
@@ -765,9 +1240,9 @@
       const seconds = Math.floor((now - activeSession.start) / 1000);
       rows.push([activeSession.containerId, activeSession.user, new Date(activeSession.start).toLocaleString(), now.toLocaleString(), formatDuration(seconds), 'In progress']);
     }
-    if(rows.length === 1){ toast('No container sessions recorded yet.', true); return; }
+    if(rows.length === 1){ toast(t('export.noSessions'), true); return; }
     const csv = rows.map(r => r.map(csvEscape).join(',')).join('\n');
-    downloadText(csv, `outbound-audit-productivity-${timestamp()}.csv`, 'text/csv');
+    downloadText(csv, `waypoint-productivity-${timestamp()}.csv`, 'text/csv');
   }
 
   function toast(msg, isError){
@@ -794,18 +1269,18 @@
   function setSyncStatus(state){
     const pill = el('sheetSyncPill');
     if(!sheetSyncConfigured()){
-      pill.textContent = 'Sheet sync: not configured';
+      pill.textContent = t('sync.notConfigured');
       pill.className = 'pill';
       return;
     }
     if(state === 'checking'){
-      pill.textContent = 'Sheet sync: checking…';
+      pill.textContent = t('sync.checking');
       pill.className = 'pill amber';
     }else if(state === 'error'){
-      pill.textContent = 'Sheet sync: connection issue';
+      pill.textContent = t('sync.error');
       pill.className = 'pill warn';
     }else{
-      pill.textContent = 'Sheet sync: connected';
+      pill.textContent = t('sync.connected');
       pill.className = 'pill ok';
     }
   }
@@ -872,19 +1347,19 @@
     const data = await sheetGet_('getManifest');
     if(!data || !Array.isArray(data.rows)) return false;
     if(data.rows.length === 0){
-      if(!silent) toast('Shared manifest data is empty — nothing to load yet.', true);
+      if(!silent) toast(t('dataset.emptyShared'), true);
       return false;
     }
     rawDataset = data.rows.filter(r => r.containerId && r.sku);
     const containers = new Set(rawDataset.map(r=>normCode(r.containerId)));
     el('datasetStatus').classList.add('show');
-    el('datasetStatusText').textContent = `${rawDataset.length} line${rawDataset.length===1?'':'s'} across ${containers.size} container${containers.size===1?'':'s'} loaded from the shared sheet.`;
+    el('datasetStatusText').textContent = t('dataset.loadedFromFileStatusShared', { count: rawDataset.length, s1: rawDataset.length===1?'':'s', containers: containers.size, s2: containers.size===1?'':'s' });
     el('clearDatasetBtn').style.display = 'inline-flex';
-    el('datasetPill').textContent = `${containers.size} containers loaded`;
+    el('datasetPill').textContent = t('dataset.containersLoadedPill', { n: containers.size });
     el('datasetPill').className = 'pill ok';
     el('containerInput').disabled = false;
     el('datasetWaitingNote').hidden = true;
-    if(!silent) toast('Manifest data loaded from the shared sheet.');
+    if(!silent) toast(t('dataset.loadedFromSheetToast'));
     return true;
   }
   async function pushManifestToSheet(rows){
@@ -901,7 +1376,7 @@
     renderUpcTile();
     if(el('upcModalOverlay') && !el('upcModalOverlay').classList.contains('hidden')) renderUpcTable(el('upcSearch').value);
     renderManifestTable(currentFilter());
-    if(!silent) toast(`${count} UPC mapping${count===1?'':'s'} loaded from the shared sheet.`);
+    if(!silent) toast(t('upc.pulledToast', { count, s: count===1?'':'s' }));
     return true;
   }
   async function pushUpcMapToSheet(){
@@ -918,7 +1393,7 @@
     users = data.users;
     if(data.settingsPassword) settingsPassword = data.settingsPassword;
     if(el('userTableBody')) renderUserTable();
-    if(!silent) toast(`${users.length} account${users.length===1?'':'s'} loaded from the shared sheet.`);
+    if(!silent) toast(t('users.pulledToast', { count: users.length, s: users.length===1?'':'s' }));
     return true;
   }
   async function pushUsersToSheet(){
@@ -1024,25 +1499,25 @@
       if(err){ toast(err.message, true); return; }
       try{
         const parsed = parseRawDataset(rows);
-        if(parsed.length === 0) throw new Error('No usable Container ID / SKU / Qty rows found.');
+        if(parsed.length === 0) throw new Error(t('manifest.noUsableRows'));
         rawDataset = parsed;
         const containers = new Set(parsed.map(r=>normCode(r.containerId)));
         el('datasetStatus').classList.add('show');
-        el('datasetStatusText').textContent = `${parsed.length} line${parsed.length===1?'':'s'} across ${containers.size} container${containers.size===1?'':'s'} loaded.`;
+        el('datasetStatusText').textContent = t('dataset.loadedFromFileStatus', { count: parsed.length, s1: parsed.length===1?'':'s', containers: containers.size, s2: containers.size===1?'':'s' });
         el('clearDatasetBtn').style.display = 'inline-flex';
-        el('datasetPill').textContent = `${containers.size} containers loaded`;
+        el('datasetPill').textContent = t('dataset.containersLoadedPill', { n: containers.size });
         el('datasetPill').className = 'pill ok';
         el('containerInput').disabled = false;
         el('datasetWaitingNote').hidden = true;
         if(!sheetSyncConfigured()){
-          toast('Manifest data loaded.');
+          toast(t('manifest.localOnlyToast'));
         }else{
           pushManifestToSheet(rawDataset).then(res => {
-            toast(res && res.ok ? 'Manifest data loaded and shared with everyone.' : 'Manifest data loaded, but sharing it failed (check your connection).', !(res && res.ok));
+            toast(res && res.ok ? t('manifest.sharedOkToast') : t('manifest.sharedFailToast'), !(res && res.ok));
           });
         }
       }catch(e2){
-        toast('Could not parse this file: ' + e2.message, true);
+        toast(t('manifest.parseError', { err: e2.message }), true);
       }
     });
   }
@@ -1051,7 +1526,7 @@
     rawDataset = [];
     el('datasetStatus').classList.remove('show');
     el('clearDatasetBtn').style.display = 'none';
-    el('datasetPill').textContent = 'No manifest data loaded';
+    el('datasetPill').textContent = t('dataset.noneLoaded');
     el('datasetPill').className = 'pill';
     el('containerInput').disabled = true;
     el('datasetWaitingNote').hidden = false;
@@ -1087,30 +1562,30 @@
       if(err){ toast(err.message, true); return; }
       try{
         const parsed = parseUpcRows(rows);
-        if(parsed.length === 0) throw new Error('No usable SKU / UPC rows found.');
+        if(parsed.length === 0) throw new Error(t('upc.noUsableRows'));
         let count = 0;
         parsed.forEach(p => { if(addUpcMapping(p.sku, p.upc)) count++; });
         el('upcBulkStatus').classList.add('show');
-        el('upcBulkStatusText').textContent = `${count} mapping${count===1?'':'s'} loaded.`;
+        el('upcBulkStatusText').textContent = t('upc.bulkStatus', { count, s: count===1?'':'s' });
         renderUpcTable();
         renderUpcTile();
         renderManifestTable(currentFilter());
         if(!sheetSyncConfigured()){
-          toast('UPC mapping updated.');
+          toast(t('upc.localOnlyToast'));
         }else{
           pushUpcMapToSheet().then(res => {
-            toast(res && res.ok ? 'UPC mapping updated and shared with everyone.' : 'UPC mapping updated, but sharing it failed (check your connection).', !(res && res.ok));
+            toast(res && res.ok ? t('upc.sharedOkToast') : t('upc.sharedFailToast'), !(res && res.ok));
           });
         }
       }catch(e2){
-        toast('Could not parse this file: ' + e2.message, true);
+        toast(t('manifest.parseError', { err: e2.message }), true);
       }
     });
   }
 
   function renderUpcTile(){
     const count = Object.keys(upcMap).length;
-    el('upcTopbarBtn').textContent = count > 0 ? `UPC Mapping (${count})` : 'UPC Mapping';
+    el('upcTopbarBtn').textContent = count > 0 ? t('topbar.upcBtnCount', { count }) : t('topbar.upcBtn');
   }
 
   function renderUpcTable(filterText){
@@ -1120,14 +1595,14 @@
       .filter(e => !q || e.upc.toLowerCase().includes(q) || e.sku.toLowerCase().includes(q))
       .sort((a,b)=> a.sku.localeCompare(b.sku));
     if(entries.length === 0){
-      body.innerHTML = `<tr><td colspan="3" class="lib-empty">No UPC mappings yet.</td></tr>`;
+      body.innerHTML = `<tr><td colspan="3" class="lib-empty">${t('upc.noMappingsYet')}</td></tr>`;
       return;
     }
     body.innerHTML = entries.map(e => `
       <tr>
         <td class="sku-cell">${escapeHtml(e.sku)}</td>
         <td class="upc-cell">${escapeHtml(e.upc)}</td>
-        <td><button class="mini-btn" data-upcremove="${escapeHtml(e.upc)}" title="Remove">&times;</button></td>
+        <td><button class="mini-btn" data-upcremove="${escapeHtml(e.upc)}" title="${t('btn.remove')}">&times;</button></td>
       </tr>
     `).join('');
     body.querySelectorAll('[data-upcremove]').forEach(btn=>{
@@ -1145,13 +1620,13 @@
   }
 
   function saveUpcLibrary(){
-    downloadText(JSON.stringify({ savedAt: new Date().toISOString(), upcMap, skuToUpc }, null, 2), `upc-mapping-${timestamp()}.json`, 'application/json');
+    downloadText(JSON.stringify({ savedAt: new Date().toISOString(), upcMap, skuToUpc }, null, 2), `waypoint-upc-mapping-${timestamp()}.json`, 'application/json');
   }
 
   async function scanContainer(rawId){
     const cid = String(rawId||'').trim();
     if(!cid) return;
-    if(rawDataset.length === 0){ toast('Manifest data has not been loaded yet.', true); return; }
+    if(rawDataset.length === 0){ toast(t('dataset.notLoadedYet'), true); return; }
 
     const rows = rawDataset.filter(r => normCode(r.containerId) === normCode(cid));
     el('notfoundBox').hidden = true;
@@ -1200,17 +1675,17 @@
     const box = el('notfoundBox');
     box.hidden = false;
     box.innerHTML = `
-      <div><b>Container ${escapeHtml(cid)}</b> was not found in the currently loaded manifest data.</div>
-      <div style="margin-top:6px;">This usually means the clerical team hasn't uploaded data for it yet.</div>
+      <div><b>${escapeHtml(cid)}</b> ${t('container.notFoundTitleRest')}</div>
+      <div style="margin-top:6px;">${t('container.notFoundBody')}</div>
       <div class="btn-row">
-        <a class="btn primary sm" href="${buildContainerMailto(cid)}" style="text-decoration:none;">Draft email to update this container</a>
-        <button class="btn ghost sm" id="notfoundCopyBtn">Copy details</button>
+        <a class="btn primary sm" href="${buildContainerMailto(cid)}" style="text-decoration:none;">${t('container.notFoundEmailBtn')}</a>
+        <button class="btn ghost sm" id="notfoundCopyBtn">${t('container.notFoundCopyBtn')}</button>
       </div>
     `;
     el('notfoundCopyBtn').addEventListener('click', () => {
       const text = `Container ID: ${cid}\nRequested at: ${new Date().toLocaleString()}`;
       if(navigator.clipboard && navigator.clipboard.writeText){
-        navigator.clipboard.writeText(text).then(()=>toast('Copied.')).catch(()=>toast('Could not copy.', true));
+        navigator.clipboard.writeText(text).then(()=>toast(t('container.copiedToast'))).catch(()=>toast(t('container.copyFailedToast'), true));
       }
     });
   }
@@ -1231,12 +1706,12 @@
     el('containerHero').hidden = true;
     el('auditWorkspace').hidden = false;
     el('containerCard').hidden = false;
-    el('containerCardHint').textContent = `Auditing container ${currentContainerId}.`;
+    el('containerCardHint').textContent = t('sidebar.container.hintActive', { cid: currentContainerId });
     el('changeContainerBtn').hidden = false;
     el('activeCid').textContent = currentContainerId;
-    el('activeCidSub').textContent = `${items.length} SKU line${items.length===1?'':'s'} on manifest`;
+    el('activeCidSub').textContent = t('container.linesOnManifest', { n: items.length, s: items.length===1?'':'s' });
     el('containerPill').hidden = false;
-    el('containerPill').textContent = 'Container ' + currentContainerId;
+    el('containerPill').textContent = t('container.pillPrefix', { cid: currentContainerId });
     el('containerPill').className = 'pill amber';
     checkPdfLibrary();
     renderAll();
@@ -1244,7 +1719,7 @@
   }
 
   function changeContainer(){
-    if(items.length && scanLog.length && !confirm('Switch containers? Unsaved progress on this container will be lost.')) return;
+    if(items.length && scanLog.length && !confirm(t('container.switchConfirm'))) return;
     commitSession(false);
     resetToContainerHero();
   }
@@ -1253,7 +1728,7 @@
     items = []; scanLog = []; currentContainerId = null;
     el('containerHero').hidden = false;
     el('auditWorkspace').hidden = true;
-    el('containerCardHint').textContent = 'Scan a container ID in the workspace to begin.';
+    el('containerCardHint').textContent = t('sidebar.container.hintDefault');
     el('changeContainerBtn').hidden = true;
     el('containerPill').hidden = true;
     el('containerInput').value = '';
@@ -1263,7 +1738,7 @@
 
   async function finishAudit(){
     if(!checkPdfLibrary()){
-      toast('PDF library did not load — check your internet connection, reload the page, and try again.', true);
+      toast(t('audit.pdfLibMissingToast'), true);
       return;
     }
     const totalExpected = items.reduce((s,i)=>s+i.expected,0);
@@ -1271,9 +1746,11 @@
     const totalOver = items.reduce((s,i)=>s+Math.max(i.scanned-i.expected,0),0);
     const incompleteLines = items.filter(i => i.expected - i.scanned !== 0).length;
 
-    let warnMsg = `Finish audit for container ${currentContainerId}?`;
+    let warnMsg = t('audit.finishConfirmPrefix', { cid: currentContainerId });
     if(incompleteLines > 0 || totalOver > 0){
-      warnMsg += `\n\nHeads up: ${incompleteLines} line${incompleteLines===1?'':'s'} ${incompleteLines===1?'is':'are'} not at expected quantity` + (totalOver>0 ? ` (${totalOver} unit${totalOver===1?'':'s'} over).` : '.') + ' The PDF will reflect this as-is.';
+      const verb = lang === 'es' ? (incompleteLines===1?'está':'están') : (incompleteLines===1?'is':'are');
+      const overNote = totalOver > 0 ? t('audit.finishConfirmOverNote', { n: totalOver, s: totalOver===1?'':'s' }) : '';
+      warnMsg += t('audit.finishConfirmWarn', { n: incompleteLines, s: incompleteLines===1?'':'s', verb, overNote });
     }
     if(!confirm(warnMsg)) return;
 
@@ -1295,7 +1772,7 @@
       generateAuditPdf(snapshot, totalExpected, totalScanned, totalOver);
     }catch(err){
       pdfOk = false;
-      toast('PDF generation failed: ' + err.message, true);
+      toast(t('audit.pdfGenFailedToast', { err: err.message }), true);
     }
 
     if(pdfOk){
@@ -1309,11 +1786,11 @@
         status: 'Finished'
       });
       if(!sheetSyncConfigured()){
-        toast('Audit finished — PDF saved to your downloads.');
+        toast(t('audit.finishedLocalOnly'));
       }else if(syncResult && syncResult.ok){
-        toast('Audit finished — PDF saved and logged to the shared sheet.');
+        toast(t('audit.finishedSharedOk'));
       }else{
-        toast('Audit finished — PDF saved, but the shared sheet log failed (check your connection).', true);
+        toast(t('audit.finishedSharedFail'), true);
       }
     }
 
@@ -1328,23 +1805,23 @@
 
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(16);
-    doc.text('Outbound Audit Report', marginX, y);
+    doc.text(t('pdf.title'), marginX, y);
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(10);
     doc.setTextColor(120);
     y += 16;
-    doc.text('Meridian | Outbound Audit', marginX, y);
+    doc.text('Waypoint | Outbound Audit', marginX, y);
     doc.setTextColor(20);
 
     y += 26;
     const seconds = Math.floor((new Date(snapshot.end) - new Date(snapshot.start)) / 1000);
     const infoRows = [
-      ['Container ID', snapshot.containerId],
-      ['Audited by (user ID)', snapshot.user || 'Unknown'],
-      ['Start time', new Date(snapshot.start).toLocaleString()],
-      ['End time', new Date(snapshot.end).toLocaleString()],
-      ['Total duration', formatDuration(seconds)],
-      ['Report generated', new Date().toLocaleString()]
+      [t('pdf.containerId'), snapshot.containerId],
+      [t('pdf.auditedBy'), snapshot.user || t('pdf.unknownUser')],
+      [t('pdf.startTime'), new Date(snapshot.start).toLocaleString()],
+      [t('pdf.endTime'), new Date(snapshot.end).toLocaleString()],
+      [t('pdf.totalDuration'), formatDuration(seconds)],
+      [t('pdf.reportGenerated'), new Date().toLocaleString()]
     ];
     doc.setFontSize(10);
     infoRows.forEach(([label, val]) => {
@@ -1358,23 +1835,21 @@
     y += 6;
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(11);
-    doc.text('Summary', marginX, y);
+    doc.text(t('pdf.summary'), marginX, y);
     y += 16;
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(10);
     const totalRemaining = Math.max(totalExpected - totalScanned, 0);
-    const summaryLine = `${snapshot.items.length} line${snapshot.items.length===1?'':'s'} — ${totalExpected} expected, ${totalScanned} scanned, ${totalRemaining} remaining` + (totalOver > 0 ? `, ${totalOver} over` : '');
+    const overNote = totalOver > 0 ? t('pdf.summaryOverNote', { n: totalOver }) : '';
+    const summaryLine = t('pdf.summaryLine', { n: snapshot.items.length, s: snapshot.items.length===1?'':'s', expected: totalExpected, scanned: totalScanned, remaining: totalRemaining, overNote });
     doc.text(summaryLine, marginX, y);
     y += 20;
 
+    const overPrefix = t('status.over', { n: '' });
     const body = snapshot.items.map(item => {
       const remaining = item.expected - item.scanned;
-      const over = Math.max(item.scanned - item.expected, 0);
       const upc = skuToUpc[normCode(item.sku)] || '—';
-      let status = 'Pending';
-      if(remaining < 0) status = 'Over +' + (-remaining);
-      else if(remaining === 0) status = 'Complete';
-      else if(item.scanned > 0) status = 'In progress';
+      const status = statusFor(item).label;
       return [
         item.sku,
         upc,
@@ -1389,22 +1864,22 @@
     doc.autoTable({
       startY: y,
       margin: { left: marginX, right: marginX },
-      head: [['SKU','UPC','Description','Expected','Scanned','Remaining','Status']],
+      head: [[t('table.sku'), t('table.upc'), t('table.description'), t('table.expected'), t('table.scanned'), t('table.remaining'), t('table.status')]],
       body: body,
       styles: { font: 'helvetica', fontSize: 8.5, cellPadding: 4 },
       headStyles: { fillColor: [26,31,39], textColor: 255 },
       didParseCell: (data) => {
         if(data.section === 'body' && data.column.dataKey === 6){
           const val = String(data.cell.raw);
-          if(val === 'Complete') data.cell.styles.textColor = [30,120,80];
-          else if(val.indexOf('Over') === 0) data.cell.styles.textColor = [190,60,40];
-          else if(val === 'Pending') data.cell.styles.textColor = [140,140,140];
+          if(val === t('status.complete')) data.cell.styles.textColor = [30,120,80];
+          else if(val.indexOf(overPrefix) === 0) data.cell.styles.textColor = [190,60,40];
+          else if(val === t('status.pending')) data.cell.styles.textColor = [140,140,140];
         }
       }
     });
 
     const filenameSafeId = String(snapshot.containerId).replace(/[^A-Za-z0-9_-]/g, '');
-    doc.save(`outbound-audit-${filenameSafeId}-${timestamp()}.pdf`);
+    doc.save(`waypoint-audit-${filenameSafeId}-${timestamp()}.pdf`);
   }
 
   function focusContainerInput(){
@@ -1446,8 +1921,8 @@
 
     const match = findMatch(trimmed);
     if(!match){
-      logScan(trimmed, 'err', 'No matching SKU on manifest', null, 0);
-      setFeedback('err', 'Unknown code', trimmed);
+      logScan(trimmed, 'err', t('scan.noMatchDetail'), null, 0);
+      setFeedback('err', t('scan.unknownTitle'), trimmed);
       renderLog();
       return;
     }
@@ -1468,13 +1943,13 @@
     const over = Math.max(item.scanned - item.expected, 0);
     const result = over > 0 ? 'warn' : 'ok';
     const detail = over > 0
-      ? `${item.sku} — +${count} — ${over} over`
-      : `${item.sku} — +${count} — ${remaining} left`;
+      ? t('scan.logOver', { sku: item.sku, count, over })
+      : t('scan.logOk', { sku: item.sku, count, remaining });
     logScan(code, result, detail, item.id, count);
     if(over > 0){
-      setFeedback('warn', `Over-scanned ${item.sku}`, `+${count} pushed it ${over} past expected`);
+      setFeedback('warn', t('scan.overTitle', { sku: item.sku }), t('scan.overSub', { count, over }));
     }else{
-      setFeedback('ok', `Matched ${item.sku}`, `+${count} — ${remaining} of ${item.expected} remaining`);
+      setFeedback('ok', t('scan.matchedTitle', { sku: item.sku }), t('scan.remainingOfExpected', { count, remaining, expected: item.expected }));
     }
     flashRow(item.id);
   }
@@ -1501,11 +1976,11 @@
         if(item) item.scanned = Math.max(item.scanned - entry.units, 0);
         scanLog.splice(i, 1);
         renderAllAfterScan();
-        setFeedback('warn', 'Last scan undone', entry.code);
+        setFeedback('warn', t('scan.undoneTitle'), entry.code);
         return;
       }
     }
-    setFeedback('warn', 'Nothing to undo', '');
+    setFeedback('warn', t('scan.nothingToUndo'), '');
   }
 
   function adjustItem(id, delta){
@@ -1548,10 +2023,10 @@
 
   function statusFor(item){
     const remaining = item.expected - item.scanned;
-    if(remaining < 0) return {cls:'over', label:'Over +'+(-remaining)};
-    if(remaining === 0) return {cls:'complete', label:'Complete'};
-    if(item.scanned > 0) return {cls:'progress', label:'In progress'};
-    return {cls:'pending', label:'Pending'};
+    if(remaining < 0) return {cls:'over', label:t('status.over', { n: -remaining })};
+    if(remaining === 0) return {cls:'complete', label:t('status.complete')};
+    if(item.scanned > 0) return {cls:'progress', label:t('status.progress')};
+    return {cls:'pending', label:t('status.pending')};
   }
 
   function renderManifestTable(filterText){
@@ -1561,7 +2036,7 @@
     const rows = items.filter(i => !q || i.sku.toLowerCase().includes(q) || (i.description||'').toLowerCase().includes(q));
 
     if(rows.length === 0){
-      body.innerHTML = `<tr class="empty-row"><td colspan="8">${items.length ? 'No lines match "'+escapeHtml(filterText)+'"' : 'No manifest lines.'}</td></tr>`;
+      body.innerHTML = `<tr class="empty-row"><td colspan="8">${items.length ? t('table.noLinesMatch', { filter: escapeHtml(filterText) }) : t('table.noManifestLines')}</td></tr>`;
       return;
     }
 
@@ -1581,8 +2056,8 @@
           <td><span class="status-chip ${st.cls}">${st.label}</span></td>
           <td>
             <div class="row-controls">
-              <button class="mini-btn" data-adjust="${item.id}" data-delta="-1" title="Remove one unit">&minus;</button>
-              <button class="mini-btn" data-adjust="${item.id}" data-delta="1" title="Add one unit manually">+</button>
+              <button class="mini-btn" data-adjust="${item.id}" data-delta="-1" title="${t('btn.removeOneUnit')}">&minus;</button>
+              <button class="mini-btn" data-adjust="${item.id}" data-delta="1" title="${t('btn.addOneUnit')}">+</button>
             </div>
           </td>
         </tr>
@@ -1596,7 +2071,7 @@
 
   function renderLog(){
     const list = el('logList');
-    if(scanLog.length === 0){ list.innerHTML = '<div class="log-empty">No scans yet.</div>'; return; }
+    if(scanLog.length === 0){ list.innerHTML = `<div class="log-empty">${t('log.empty')}</div>`; return; }
     list.innerHTML = scanLog.slice(-40).map(l => `
       <div class="log-item ${l.result}">
         <span class="t">${l.time}</span>
@@ -1610,14 +2085,14 @@
 
   function saveProgress(){
     const snapshot = { savedAt: new Date().toISOString(), currentContainerId, items, scanLog, activeSession };
-    downloadText(JSON.stringify(snapshot, null, 2), `outbound-audit-progress-${timestamp()}.json`, 'application/json');
+    downloadText(JSON.stringify(snapshot, null, 2), `waypoint-progress-${timestamp()}.json`, 'application/json');
   }
   function loadProgress(file){
     const reader = new FileReader();
     reader.onload = (e) => {
       try{
         const snap = JSON.parse(e.target.result);
-        if(!Array.isArray(snap.items)) throw new Error('File does not look like a saved progress file.');
+        if(!Array.isArray(snap.items)) throw new Error(t('progress.notAFile'));
         items = snap.items;
         scanLog = snap.scanLog || [];
         currentContainerId = snap.currentContainerId || 'RESUMED';
@@ -1634,7 +2109,7 @@
         }
         launchAuditWorkspace();
       }catch(err){
-        toast('Could not load that progress file: ' + err.message, true);
+        toast(t('progress.loadError', { err: err.message }), true);
       }
     };
     reader.readAsText(file);
@@ -1648,7 +2123,7 @@
       rows.push([currentContainerId, i.sku, upc, i.description, i.expected, i.scanned, over, remaining, statusFor(i).label]);
     });
     const csv = rows.map(r => r.map(csvEscape).join(',')).join('\n');
-    downloadText(csv, `outbound-audit-report-${timestamp()}.csv`, 'text/csv');
+    downloadText(csv, `waypoint-report-${timestamp()}.csv`, 'text/csv');
   }
 
   function csvEscape(v){
@@ -1775,17 +2250,17 @@
   el('upcFormAddBtn').addEventListener('click', () => {
     const sku = el('upcFormSku').value.trim();
     const upc = el('upcFormUpc').value.trim();
-    if(!sku || !upc){ toast('Enter both a SKU and a UPC.', true); return; }
+    if(!sku || !upc){ toast(t('upc.needBoth'), true); return; }
     addUpcMapping(sku, upc);
     el('upcFormSku').value = ''; el('upcFormUpc').value = '';
     renderUpcTable(el('upcSearch').value);
     renderUpcTile();
     renderManifestTable(currentFilter());
     if(!sheetSyncConfigured()){
-      toast('Mapping saved.');
+      toast(t('upc.mappingSavedLocal'));
     }else{
       pushUpcMapToSheet().then(res => {
-        toast(res && res.ok ? 'Mapping saved and shared with everyone.' : 'Mapping saved locally, but sharing it failed (check your connection).', !(res && res.ok));
+        toast(res && res.ok ? t('upc.mappingSavedShared') : t('upc.mappingSavedFail'), !(res && res.ok));
       });
     }
   });
@@ -1819,6 +2294,11 @@
   /* ---- productivity events ---- */
   el('exportProductivityBtn').addEventListener('click', exportProductivity);
 
+  /* ---- language toggle ---- */
+  document.querySelectorAll('.lang-switch').forEach(btn => btn.addEventListener('click', toggleLanguage));
+
+  applyStaticTranslations();
+  updateLangSwitchVisual();
   renderUpcTile();
   checkPdfLibrary();
   initSyncStatus();
