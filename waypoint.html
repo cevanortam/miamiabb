@@ -618,8 +618,8 @@
       'dataset.noneLoaded': 'No manifest data loaded',
       'container.pillPrefix': 'Container {cid}',
       'user.signedInPrefix': 'Signed in: {user}',
-      'topbar.upcBtn': 'UPC Mapping',
-      'topbar.upcBtnCount': 'UPC Mapping ({count})',
+      'topbar.upcBtn': 'Barcode Mapping',
+      'topbar.upcBtnCount': 'Barcode Mapping ({count})',
       'topbar.settingsBtn': 'Settings',
       'topbar.logout': 'Log out',
       'sidebar.manifest.title': 'Manifest Data',
@@ -655,9 +655,9 @@
       'btn.undo': '↺ Undo last scan',
       'toolbar.manifestTitle': 'Manifest',
       'search.filterSkuDesc': 'Filter SKU or description',
-      'search.filterSkuUpc': 'Filter SKU or UPC',
+      'search.filterSkuUpc': 'Filter SKU or barcode',
       'table.sku': 'SKU',
-      'table.upc': 'UPC',
+      'table.upc': 'Barcode',
       'table.description': 'Description',
       'table.expected': 'Expected',
       'table.scanned': 'Scanned',
@@ -673,13 +673,13 @@
       'btn.resumeProgress': 'Resume progress',
       'btn.exportCsv': 'Export CSV report',
       'footer.note': 'Progress lives in this browser tab only — save it before closing if you need to resume later.',
-      'upc.modalTitle': 'UPC → SKU Mapping',
-      'upc.modalIntro': 'When a piece only carries a UPC barcode, scanning that UPC will resolve to its SKU automatically. Upload a bulk file once, then add or correct individual parts any time.',
-      'dropzone.upc.title': 'Bulk upload SKU ↔ UPC file',
-      'dropzone.upc.sub': '.csv or .xlsx with SKU and UPC columns',
+      'upc.modalTitle': 'Barcode → SKU Mapping',
+      'upc.modalIntro': 'When a piece only carries a UPC or EAN barcode, scanning it will resolve to its SKU automatically. Upload a bulk file once, then add or correct individual parts any time.',
+      'dropzone.upc.title': 'Bulk upload SKU / UPC / EAN file',
+      'dropzone.upc.sub': '.csv or .xlsx with a SKU column and a UPC and/or EAN column',
       'upc.addOneLabel': 'Add / update one part',
       'placeholder.sku': 'SKU',
-      'placeholder.upc': 'UPC',
+      'placeholder.upc': 'UPC or EAN',
       'btn.save': 'Save',
       'btn.saveMappingFile': 'Save mapping file',
       'settings.modalTitle': 'Settings — Users',
@@ -717,12 +717,14 @@
       'manifest.sharedOkToast': 'Manifest data loaded and shared with everyone.',
       'manifest.sharedFailToast': 'Manifest data loaded, but sharing it failed (check your connection).',
       'upc.bulkStatus': '{count} mapping{s} loaded.',
-      'upc.noUsableRows': 'No usable SKU / UPC rows found.',
-      'upc.localOnlyToast': 'UPC mapping updated.',
-      'upc.sharedOkToast': 'UPC mapping updated and shared with everyone.',
-      'upc.sharedFailToast': 'UPC mapping updated, but sharing it failed (check your connection).',
-      'upc.pulledToast': '{count} UPC mapping{s} loaded from the shared sheet.',
-      'upc.needBoth': 'Enter both a SKU and a UPC.',
+      'upc.noUsableRows': 'No usable SKU / UPC / EAN rows found.',
+      'upc.columnsNotFound': 'Could not find a SKU column plus a UPC and/or EAN column in this file.',
+      'upc.conflictsNote': '⚠ {n} code{s} were linked to more than one SKU — the most recently listed match was kept.',
+      'upc.localOnlyToast': 'Barcode mapping updated.',
+      'upc.sharedOkToast': 'Barcode mapping updated and shared with everyone.',
+      'upc.sharedFailToast': 'Barcode mapping updated, but sharing it failed (check your connection).',
+      'upc.pulledToast': '{count} barcode mapping{s} loaded from the shared sheet.',
+      'upc.needBoth': 'Enter both a SKU and a barcode.',
       'upc.mappingSavedLocal': 'Mapping saved.',
       'upc.mappingSavedShared': 'Mapping saved and shared with everyone.',
       'upc.mappingSavedFail': 'Mapping saved locally, but sharing it failed (check your connection).',
@@ -807,8 +809,8 @@
       'dataset.noneLoaded': 'No hay datos de manifiesto cargados',
       'container.pillPrefix': 'Contenedor {cid}',
       'user.signedInPrefix': 'Sesión iniciada: {user}',
-      'topbar.upcBtn': 'Mapeo de UPC',
-      'topbar.upcBtnCount': 'Mapeo de UPC ({count})',
+      'topbar.upcBtn': 'Mapeo de Códigos',
+      'topbar.upcBtnCount': 'Mapeo de Códigos ({count})',
       'topbar.settingsBtn': 'Configuración',
       'topbar.logout': 'Cerrar sesión',
       'sidebar.manifest.title': 'Datos del Manifiesto',
@@ -844,9 +846,9 @@
       'btn.undo': '↺ Deshacer último escaneo',
       'toolbar.manifestTitle': 'Manifiesto',
       'search.filterSkuDesc': 'Filtrar por SKU o descripción',
-      'search.filterSkuUpc': 'Filtrar por SKU o UPC',
+      'search.filterSkuUpc': 'Filtrar por SKU o código',
       'table.sku': 'SKU',
-      'table.upc': 'UPC',
+      'table.upc': 'Código',
       'table.description': 'Descripción',
       'table.expected': 'Esperado',
       'table.scanned': 'Escaneado',
@@ -862,13 +864,13 @@
       'btn.resumeProgress': 'Reanudar progreso',
       'btn.exportCsv': 'Exportar informe CSV',
       'footer.note': 'El progreso solo existe en esta pestaña del navegador — guárdelo antes de cerrar si necesita continuar más tarde.',
-      'upc.modalTitle': 'Mapeo de UPC → SKU',
-      'upc.modalIntro': 'Cuando una pieza solo tiene un código de barras UPC, escanear ese UPC lo resolverá automáticamente a su SKU. Cargue un archivo masivo una vez, luego agregue o corrija piezas individuales en cualquier momento.',
-      'dropzone.upc.title': 'Carga masiva de archivo SKU ↔ UPC',
-      'dropzone.upc.sub': '.csv o .xlsx con columnas SKU y UPC',
+      'upc.modalTitle': 'Mapeo de Código de Barras → SKU',
+      'upc.modalIntro': 'Cuando una pieza solo tiene un código de barras UPC o EAN, escanearlo lo resolverá automáticamente a su SKU. Cargue un archivo masivo una vez, luego agregue o corrija piezas individuales en cualquier momento.',
+      'dropzone.upc.title': 'Carga masiva de archivo SKU / UPC / EAN',
+      'dropzone.upc.sub': '.csv o .xlsx con una columna SKU y una columna UPC y/o EAN',
       'upc.addOneLabel': 'Agregar / actualizar una pieza',
       'placeholder.sku': 'SKU',
-      'placeholder.upc': 'UPC',
+      'placeholder.upc': 'UPC o EAN',
       'btn.save': 'Guardar',
       'btn.saveMappingFile': 'Guardar archivo de mapeo',
       'settings.modalTitle': 'Configuración — Usuarios',
@@ -905,12 +907,14 @@
       'manifest.sharedOkToast': 'Datos del manifiesto cargados y compartidos con todos.',
       'manifest.sharedFailToast': 'Datos del manifiesto cargados, pero no se pudieron compartir (verifique su conexión).',
       'upc.bulkStatus': '{count} mapeo{s} cargado{s}.',
-      'upc.noUsableRows': 'No se encontraron filas utilizables de SKU / UPC.',
-      'upc.localOnlyToast': 'Mapeo de UPC actualizado.',
-      'upc.sharedOkToast': 'Mapeo de UPC actualizado y compartido con todos.',
-      'upc.sharedFailToast': 'Mapeo de UPC actualizado, pero no se pudo compartir (verifique su conexión).',
-      'upc.pulledToast': '{count} mapeo{s} de UPC cargado{s} desde la hoja compartida.',
-      'upc.needBoth': 'Ingrese tanto el SKU como el UPC.',
+      'upc.noUsableRows': 'No se encontraron filas utilizables de SKU / UPC / EAN.',
+      'upc.columnsNotFound': 'No se encontró una columna de SKU junto con una columna de UPC y/o EAN en este archivo.',
+      'upc.conflictsNote': '⚠ {n} código{s} estaban vinculados a más de un SKU — se conservó la coincidencia más reciente.',
+      'upc.localOnlyToast': 'Mapeo de códigos actualizado.',
+      'upc.sharedOkToast': 'Mapeo de códigos actualizado y compartido con todos.',
+      'upc.sharedFailToast': 'Mapeo de códigos actualizado, pero no se pudo compartir (verifique su conexión).',
+      'upc.pulledToast': '{count} mapeo{s} de código cargado{s} desde la hoja compartida.',
+      'upc.needBoth': 'Ingrese tanto el SKU como el código.',
       'upc.mappingSavedLocal': 'Mapeo guardado.',
       'upc.mappingSavedShared': 'Mapeo guardado y compartido con todos.',
       'upc.mappingSavedFail': 'Mapeo guardado localmente, pero no se pudo compartir (verifique su conexión).',
@@ -1425,7 +1429,8 @@
     sku: ['sku'],
     description: ['sku description','description','item description'],
     qty: ['qty','quantity'],
-    upc: ['upc','upc code','barcode','ean']
+    upc: ['upc','upc code','barcode'],
+    ean: ['ean','ean code','gtin']
   };
   function normHeader(s){ return String(s||'').toLowerCase().trim(); }
   function detectHeaderRow(rows, wantedKeys){
@@ -1454,21 +1459,52 @@
     if(typeof v === 'number') return v;
     return parseFloat(String(v).replace(/[, ]/g,''));
   }
-  function workbookToRows(wb){
-    const sheetName = wb.SheetNames[0];
+  function sheetRows(wb, sheetName){
     return XLSX.utils.sheet_to_json(wb.Sheets[sheetName], { header: 1, raw: true, defval: '' });
   }
-  function readWorkbook(file, cb){
+
+  // Some exports (like pivot/summary workbooks) put the real data on a sheet
+  // other than the first one. Rather than guess from headers alone, this tries
+  // the given parse function against every sheet and keeps whichever sheet
+  // actually yields the most usable rows — so a near-empty summary tab never
+  // wins over the sheet that actually has the data, even if both technically
+  // have the right column headers.
+  function pickBestSheet(wb, parseFn){
+    let best = null;
+    wb.SheetNames.forEach(name => {
+      let rows, parsed;
+      try{
+        rows = sheetRows(wb, name);
+        parsed = parseFn(rows);
+      }catch(e){ return; }
+      if(!best || parsed.length > best.parsed.length){
+        best = { rows, sheetName: name, parsed };
+      }
+    });
+    return best;
+  }
+
+  function readWorkbookRaw(file, cb){
     const reader = new FileReader();
     reader.onerror = () => cb(new Error('Could not read that file.'));
     reader.onload = (e) => {
       try{
         const data = new Uint8Array(e.target.result);
-        const wb = XLSX.read(data, { type: 'array' });
-        cb(null, workbookToRows(wb));
+        cb(null, XLSX.read(data, { type: 'array' }));
       }catch(err){ cb(err); }
     };
     reader.readAsArrayBuffer(file);
+  }
+
+  function readWorkbook(file, parseFn, cb){
+    readWorkbookRaw(file, (err, wb) => {
+      if(err){ cb(err); return; }
+      const best = pickBestSheet(wb, parseFn);
+      if(best){ cb(null, best.rows); return; }
+      // nothing parsed on any sheet — fall back to sheet 1 so the caller's own
+      // parseFn throws its normal, specific "couldn't find these columns" error
+      cb(null, sheetRows(wb, wb.SheetNames[0]));
+    });
   }
 
   function parseRawDataset(rows){
@@ -1495,7 +1531,7 @@
   }
 
   function handleDatasetFile(file){
-    readWorkbook(file, (err, rows) => {
+    readWorkbook(file, parseRawDataset, (err, rows) => {
       if(err){ toast(err.message, true); return; }
       try{
         const parsed = parseRawDataset(rows);
@@ -1534,39 +1570,54 @@
   }
 
   function parseUpcRows(rows){
-    const header = detectHeaderRow(rows, ['sku','upc']);
-    if(!header || header.map.sku === undefined || header.map.upc === undefined){
-      throw new Error('Could not find SKU / UPC columns in this file.');
+    const header = detectHeaderRow(rows, ['sku','upc','ean']);
+    if(!header || header.map.sku === undefined || (header.map.upc === undefined && header.map.ean === undefined)){
+      throw new Error(t('upc.columnsNotFound'));
     }
     const out = [];
     for(let r = header.rowIndex + 1; r < rows.length; r++){
       const row = rows[r] || [];
       const sku = String(row[header.map.sku] ?? '').trim();
-      const upc = String(row[header.map.upc] ?? '').trim();
-      if(!sku || !upc) continue;
-      out.push({ sku, upc });
+      if(!sku) continue;
+      if(header.map.upc !== undefined){
+        const upc = String(row[header.map.upc] ?? '').trim();
+        if(upc && upc.toLowerCase() !== '(blank)') out.push({ sku, code: upc });
+      }
+      if(header.map.ean !== undefined){
+        const ean = String(row[header.map.ean] ?? '').trim();
+        if(ean && ean.toLowerCase() !== '(blank)') out.push({ sku, code: ean });
+      }
     }
     return out;
   }
 
-  function addUpcMapping(sku, upc){
-    const nSku = normCode(sku), nUpc = normCode(upc);
-    if(!nSku || !nUpc) return false;
-    upcMap[nUpc] = nSku;
-    skuToUpc[nSku] = upc.trim();
+  // A "code" here can be a UPC, an EAN, or any other barcode value — they all
+  // resolve to the same SKU the same way, so they share one lookup table.
+  function addUpcMapping(sku, code){
+    const nSku = normCode(sku), nCode = normCode(code);
+    if(!nSku || !nCode) return false;
+    upcMap[nCode] = nSku;
+    skuToUpc[nSku] = code.trim();
     return true;
   }
 
   function handleUpcBulkFile(file){
-    readWorkbook(file, (err, rows) => {
+    readWorkbook(file, parseUpcRows, (err, rows) => {
       if(err){ toast(err.message, true); return; }
       try{
         const parsed = parseUpcRows(rows);
         if(parsed.length === 0) throw new Error(t('upc.noUsableRows'));
         let count = 0;
-        parsed.forEach(p => { if(addUpcMapping(p.sku, p.upc)) count++; });
+        const seenCode = {};
+        let conflicts = 0;
+        parsed.forEach(p => {
+          const nCode = normCode(p.code), nSku = normCode(p.sku);
+          if(seenCode[nCode] && seenCode[nCode] !== nSku) conflicts++;
+          seenCode[nCode] = nSku;
+          if(addUpcMapping(p.sku, p.code)) count++;
+        });
         el('upcBulkStatus').classList.add('show');
-        el('upcBulkStatusText').textContent = t('upc.bulkStatus', { count, s: count===1?'':'s' });
+        el('upcBulkStatusText').textContent = t('upc.bulkStatus', { count, s: count===1?'':'s' }) + (conflicts > 0 ? ' ' + t('upc.conflictsNote', { n: conflicts, s: conflicts===1?'':'s' }) : '');
         renderUpcTable();
         renderUpcTile();
         renderManifestTable(currentFilter());
@@ -2115,7 +2166,7 @@
     reader.readAsText(file);
   }
   function exportReport(){
-    const rows = [['Container ID','SKU','UPC','Description','Expected Qty','Scanned Qty','Over-scanned','Remaining','Status']];
+    const rows = [['Container ID','SKU','Barcode','Description','Expected Qty','Scanned Qty','Over-scanned','Remaining','Status']];
     items.forEach(i=>{
       const remaining = Math.max(i.expected - i.scanned, 0);
       const over = Math.max(i.scanned - i.expected, 0);
@@ -2152,6 +2203,7 @@
   function closeUpcModal(){ el('upcModalOverlay').classList.add('hidden'); }
 
   const datasetDz = el('datasetDropzone');
+  datasetDz.addEventListener('click', () => el('datasetInput').click());
   datasetDz.addEventListener('dragover', e => { e.preventDefault(); datasetDz.classList.add('drag'); });
   datasetDz.addEventListener('dragleave', () => datasetDz.classList.remove('drag'));
   datasetDz.addEventListener('drop', e => { e.preventDefault(); datasetDz.classList.remove('drag'); if(e.dataTransfer.files[0]) handleDatasetFile(e.dataTransfer.files[0]); });
@@ -2242,6 +2294,7 @@
   el('upcModalOverlay').addEventListener('click', e => { if(e.target === el('upcModalOverlay')) closeUpcModal(); });
 
   const upcDz = el('upcDropzone');
+  upcDz.addEventListener('click', () => el('upcBulkInput').click());
   upcDz.addEventListener('dragover', e => { e.preventDefault(); upcDz.classList.add('drag'); });
   upcDz.addEventListener('dragleave', () => upcDz.classList.remove('drag'));
   upcDz.addEventListener('drop', e => { e.preventDefault(); upcDz.classList.remove('drag'); if(e.dataTransfer.files[0]) handleUpcBulkFile(e.dataTransfer.files[0]); });
