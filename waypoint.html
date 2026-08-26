@@ -2224,7 +2224,7 @@
       focusScanInput();
     }
     if(el('containerHero') && !el('containerHero').hidden
-      && !e.target.closest('.btn') && !e.target.closest('.notfound-box')){
+      && !e.target.closest('.btn') && !e.target.closest('.notfound-box') && !e.target.closest('.modal-overlay')){
       focusContainerInput();
     }
   });
