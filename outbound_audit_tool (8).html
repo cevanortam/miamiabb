@@ -1,0 +1,1831 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meridian | Outbound Audit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+<style>
+
+  :root{
+    --bg:#12151b; --panel:#1a1f27; --panel-alt:#212832; --border:#2c333e; --border-soft:#242b35;
+    --text:#e9ecf1; --muted:#8a94a3; --muted-dim:#5f6875;
+    --amber:#f2a93b; --amber-deep:#c9821a; --blue:#5b93ff; --red:#e4572e; --green:#46b378;
+    --mono:'IBM Plex Mono','Consolas',monospace; --disp:'Oswald','Segoe UI Semibold',sans-serif; --sans:'Inter','Segoe UI',sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:radial-gradient(1100px 500px at 85% -10%, rgba(242,169,59,0.06), transparent 60%), var(--bg); color:var(--text); font-family:var(--sans); min-height:100vh;}
+  ::selection{background:var(--amber);color:#1a1305;}
+
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;border-bottom:1px solid var(--border);background:linear-gradient(180deg, var(--panel), rgba(26,31,39,0.85));position:sticky;top:0;z-index:40;backdrop-filter:blur(6px);}
+  .brand{display:flex;align-items:center;gap:12px;}
+  .brand .logo-badge{height:34px;width:34px;padding:0;border-radius:6px;background:#f5f5f5;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;flex:none;}
+  .brand .logo-badge span{font-family:var(--disp);font-weight:700;font-size:14px;color:#12151b;}
+  .brand h1{font-family:var(--disp);font-weight:600;letter-spacing:0.3px;font-size:19px;margin:0;text-transform:uppercase;}
+  .brand p{margin:0;font-size:11.5px;color:var(--muted);font-family:var(--mono);letter-spacing:0.4px;}
+  .topbar-right{display:flex;align-items:center;gap:10px;}
+  .pill{font-family:var(--mono);font-size:11px;letter-spacing:0.5px;padding:5px 10px;border-radius:20px;border:1px solid var(--border);color:var(--muted);white-space:nowrap;}
+  .pill.ok{border-color:rgba(70,179,120,0.5);color:var(--green);}
+  .pill.warn{border-color:rgba(228,87,46,0.5);color:var(--red);}
+  .pill.amber{border-color:var(--amber-deep);color:var(--amber);}
+
+  .layout{display:flex;align-items:flex-start;min-height:calc(100vh - 63px);position:relative;}
+  .sidebar{width:320px;flex:none;padding:20px;border-right:1px solid var(--border);display:flex;flex-direction:column;gap:18px;position:sticky;top:63px;height:calc(100vh - 63px);overflow-y:auto;}
+  .workspace{flex:1;min-width:0;padding:20px 24px 60px;position:relative;}
+
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:16px;}
+  .card h2{font-family:var(--disp);font-size:13px;text-transform:uppercase;letter-spacing:0.6px;margin:0 0 10px;color:var(--text);font-weight:600;display:flex;align-items:center;gap:8px;}
+  .card h2 .num{color:var(--amber);font-family:var(--mono);font-size:11px;border:1px solid var(--amber-deep);border-radius:4px;padding:1px 6px;}
+  .card p.hint{font-size:12px;color:var(--muted);line-height:1.5;margin:0 0 10px;}
+
+  .dropzone{border:1.5px dashed var(--border);border-radius:8px;padding:16px 12px;text-align:center;cursor:pointer;transition:all .15s ease;background:var(--panel-alt);position:relative;}
+  .dropzone:hover, .dropzone.drag{border-color:var(--amber);background:rgba(242,169,59,0.06);}
+  .dropzone svg{opacity:0.7;margin-bottom:4px;}
+  .dropzone .dz-title{font-size:12.5px;font-weight:600;}
+  .dropzone .dz-sub{font-size:11px;color:var(--muted);margin-top:3px;}
+  input[type=file]{display:none;}
+  .file-status{margin-top:9px;font-family:var(--mono);font-size:11px;color:var(--muted);display:none;align-items:flex-start;gap:7px;background:var(--panel-alt);border:1px solid var(--border-soft);border-radius:6px;padding:8px 9px;}
+  .file-status.show{display:flex;}
+  .file-status .dot{width:7px;height:7px;border-radius:50%;background:var(--green);margin-top:4px;flex:none;}
+
+  .btn{font-family:var(--sans);font-weight:600;font-size:13px;letter-spacing:0.2px;border-radius:7px;padding:9px 14px;border:1px solid var(--border);background:var(--panel-alt);color:var(--text);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px;transition:all .12s ease;}
+  .btn:hover{border-color:var(--muted-dim);transform:translateY(-1px);}
+  .btn:active{transform:translateY(0);}
+  .btn.primary{background:linear-gradient(180deg,#ffc266,var(--amber));border-color:var(--amber-deep);color:#1a1305;}
+  .btn.primary:hover{filter:brightness(1.05);}
+  .btn.ghost{background:transparent;}
+  .btn.danger-outline{border-color:rgba(228,87,46,0.55);color:#ffb199;}
+  .btn.danger-outline:hover{background:rgba(228,87,46,0.08);}
+  .btn.sm{padding:6px 10px;font-size:12px;}
+  .btn:disabled{opacity:0.4;cursor:not-allowed;transform:none;}
+  .btn.icon-x{width:24px;height:24px;padding:0;border-radius:5px;font-size:13px;flex:none;}
+  .btn.wide{width:100%;}
+  .btn-row{display:flex;gap:8px;flex-wrap:wrap;}
+
+  .field{margin-bottom:12px;}
+  .field:last-child{margin-bottom:0;}
+  .field label{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:5px;font-family:var(--mono);}
+  .field input, .field select{width:100%;background:var(--panel-alt);border:1px solid var(--border);border-radius:7px;padding:9px 11px;color:var(--text);font-family:var(--mono);font-size:13px;}
+  .field input:focus, .field select:focus{outline:none;border-color:var(--amber);}
+
+  .badge{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:0.4px;padding:3px 8px;border-radius:5px;border:1px solid;display:inline-block;}
+  .badge.ok{color:var(--green);border-color:rgba(70,179,120,0.5);background:rgba(70,179,120,0.08);}
+  .badge.warn{color:#ffb199;border-color:rgba(228,87,46,0.55);background:rgba(228,87,46,0.08);}
+  .badge.plain{color:var(--muted);border-color:var(--border);}
+  .badge.amber{color:var(--amber);border-color:var(--amber-deep);background:rgba(242,169,59,0.08);}
+
+  .toast{position:fixed;bottom:24px;right:22px;background:var(--panel);border:1px solid var(--border);color:var(--text);padding:12px 16px;border-radius:8px;font-size:13px;box-shadow:0 12px 30px rgba(0,0,0,.4);z-index:999;max-width:340px;display:none;font-family:var(--sans);}
+  .toast.error{border-color:rgba(228,87,46,0.6);color:#ffb199;}
+  .toast.show{display:block;animation:fadein .15s ease-out;}
+  @keyframes fadein{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+  .modal-overlay{position:fixed;inset:0;background:rgba(8,9,12,0.72);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;z-index:200;padding:20px;}
+  .modal-overlay.hidden{display:none;}
+  .modal{background:var(--panel);border:1px solid var(--border);border-radius:12px;width:100%;max-width:460px;padding:22px;box-shadow:0 20px 60px rgba(0,0,0,0.5);}
+  .modal.wide{max-width:760px;max-height:86vh;display:flex;flex-direction:column;}
+  .modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex:none;}
+  .modal-head h3{font-family:var(--disp);text-transform:uppercase;font-size:16px;letter-spacing:0.4px;margin:0;flex:1;font-weight:600;}
+  .modal-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:20px;padding:2px 6px;line-height:1;}
+  .modal-close:hover{color:var(--text);}
+  .modal-body{overflow-y:auto;flex:1;}
+
+  /* ---- login overlay ---- */
+  .login-overlay{position:fixed;inset:0;background:radial-gradient(1100px 500px at 85% -10%, rgba(242,169,59,0.06), transparent 60%), var(--bg);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px;}
+  .login-overlay.hidden{display:none;}
+  .login-card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:32px;width:100%;max-width:360px;box-shadow:0 20px 60px rgba(0,0,0,0.5);}
+  .login-card .brand{justify-content:center;margin-bottom:22px;}
+  .login-card h2{font-family:var(--disp);font-size:15px;text-transform:uppercase;letter-spacing:0.4px;margin:0 0 18px;text-align:center;color:var(--text);}
+  .login-error{background:rgba(228,87,46,0.1);border:1px solid rgba(228,87,46,0.4);color:#ffb199;border-radius:7px;padding:8px 11px;font-size:12.5px;margin-bottom:12px;display:none;}
+  .login-error.show{display:block;}
+  .login-hint{font-family:var(--mono);font-size:10.5px;color:var(--muted-dim);text-align:center;margin-top:16px;line-height:1.6;}
+
+  /* ---- settings modal / user table ---- */
+  .settings-lock{text-align:center;padding:10px 0 4px;}
+  .settings-lock p{color:var(--muted);font-size:12.5px;margin:0 0 16px;}
+  .settings-unlocked{display:none;}
+  .settings-unlocked.show{display:block;}
+  table.usertable{width:100%;border-collapse:collapse;font-size:12.5px;}
+  table.usertable th{text-align:left;font-family:var(--mono);font-size:10px;text-transform:uppercase;color:var(--muted);padding:6px 8px;border-bottom:1px solid var(--border);}
+  table.usertable td{padding:6px 8px;border-bottom:1px solid var(--border-soft);color:var(--text);}
+  table.usertable input{background:var(--panel-alt);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:12.5px;border-radius:6px;padding:5px 7px;width:100%;}
+  .security-note{font-size:11px;color:var(--muted-dim);line-height:1.6;background:var(--panel-alt);border:1px solid var(--border-soft);border-radius:7px;padding:10px 12px;margin-top:14px;}
+
+  .container-hero{max-width:640px;margin:60px auto 0;text-align:center;}
+  .container-hero .eyebrow{font-family:var(--mono);font-size:11.5px;color:var(--amber);letter-spacing:0.14em;text-transform:uppercase;margin-bottom:10px;}
+  .container-hero h2{font-family:var(--disp);font-size:26px;margin:0 0 8px;text-transform:uppercase;letter-spacing:0.3px;}
+  .container-hero p{color:var(--muted);font-size:13.5px;line-height:1.6;margin:0 auto 26px;max-width:480px;}
+  .container-scan-wrap{position:relative;}
+  #containerInput{
+    width:100%;font-family:var(--mono);font-size:22px;font-weight:700;letter-spacing:0.03em;text-align:center;text-transform:uppercase;
+    padding:18px 20px;border-radius:10px;border:2px solid var(--border);background:var(--panel-alt);color:var(--text);outline:none;
+  }
+  #containerInput:focus{border-color:var(--amber);}
+  #containerInput:disabled{opacity:.5;}
+  .dataset-waiting{font-family:var(--mono);font-size:12px;color:var(--muted-dim);margin-top:14px;}
+
+  .notfound-box{
+    max-width:520px;margin:22px auto 0;padding:18px 20px;background:rgba(228,87,46,0.08);
+    border:1px solid rgba(228,87,46,0.4);border-radius:10px;color:#ffb199;font-size:13.5px;text-align:left;
+  }
+  .notfound-box b{color:#ffcdbd;}
+  .notfound-box .btn-row{margin-top:14px;}
+
+  .container-strip{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:12px 16px;margin-bottom:16px;
+  }
+  .container-strip .cid{font-family:var(--mono);font-weight:700;font-size:16px;color:var(--amber);}
+  .container-strip .cid-sub{font-family:var(--mono);font-size:11px;color:var(--muted);}
+
+  .stats-row{display:flex;gap:8px;margin-bottom:16px;}
+  .stat{flex:1;background:var(--panel-alt);border:1px solid var(--border-soft);border-radius:7px;padding:9px 8px;text-align:center;}
+  .stat .n{font-family:var(--mono);font-size:19px;font-weight:700;color:var(--amber);}
+  .stat.complete .n{color:var(--green);}
+  .stat .l{font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:0.4px;margin-top:2px;}
+  .progress-track{height:6px;background:var(--border-soft);border-radius:4px;overflow:hidden;margin-bottom:18px;}
+  .progress-fill{height:100%;background:linear-gradient(90deg,var(--amber-deep),var(--amber));border-radius:4px;transition:width .25s ease;}
+
+  .scan-panel{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:16px;}
+  .scan-panel label{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:8px;font-family:var(--mono);}
+  .scan-row{display:flex;gap:10px;align-items:stretch;}
+  #scanInput{
+    flex:1;min-width:0;font-family:var(--mono);font-size:19px;font-weight:600;padding:15px 16px;border-radius:9px;
+    border:2px solid var(--border);background:var(--panel-alt);color:var(--text);outline:none;text-transform:uppercase;
+  }
+  #scanInput:focus{border-color:var(--amber);}
+  .scan-qty-wrap{flex:none;width:96px;display:flex;flex-direction:column;}
+  .scan-qty-wrap .sq-label{font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:4px;font-family:var(--mono);text-align:center;}
+  #scanQtyInput{
+    width:100%;font-family:var(--mono);font-size:19px;font-weight:700;padding:15px 8px;border-radius:9px;text-align:center;
+    border:2px solid var(--border);background:var(--panel-alt);color:var(--amber);outline:none;
+  }
+  #scanQtyInput:focus{border-color:var(--amber);}
+  .scan-feedback{
+    margin-top:10px;min-height:42px;display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:8px;font-size:13.5px;font-weight:600;
+    background:var(--panel-alt);border:1px solid var(--border-soft);color:var(--muted);
+  }
+  .scan-feedback.ok{background:rgba(70,179,120,0.1);color:var(--green);border-color:rgba(70,179,120,0.4);}
+  .scan-feedback.warn{background:rgba(242,169,59,0.1);color:var(--amber);border-color:var(--amber-deep);}
+  .scan-feedback.err{background:rgba(228,87,46,0.1);color:#ffb199;border-color:rgba(228,87,46,0.5);}
+  .scan-feedback .fb-badge{font-family:var(--mono);font-size:11px;padding:2px 7px;border-radius:5px;background:rgba(255,255,255,0.06);}
+  .scan-panel-actions{margin-top:10px;}
+
+  .over-banner{background:rgba(228,87,46,0.08);border:1px solid rgba(228,87,46,0.4);color:#ffb199;border-radius:10px;padding:10px 14px;font-size:13px;font-weight:600;margin-bottom:14px;}
+
+  .toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:18px 0 10px;flex-wrap:wrap;}
+  .toolbar h3{font-family:var(--disp);font-size:15px;margin:0;text-transform:uppercase;letter-spacing:0.4px;}
+  .search-box{display:flex;align-items:center;gap:8px;background:var(--panel-alt);border:1px solid var(--border);border-radius:8px;padding:7px 10px;font-size:13px;}
+  .search-box input{border:none;outline:none;font-family:var(--sans);font-size:13px;width:180px;background:transparent;color:var(--text);}
+
+  .table-wrap{background:var(--panel);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:16px;}
+  table.manifest{width:100%;border-collapse:collapse;font-size:13px;}
+  table.manifest thead th{text-align:left;font-family:var(--mono);font-size:10.5px;text-transform:uppercase;letter-spacing:0.5px;color:var(--muted);background:var(--panel-alt);padding:10px 12px;border-bottom:1px solid var(--border);white-space:nowrap;}
+  table.manifest td{padding:9px 12px;border-bottom:1px solid var(--border-soft);color:var(--text);vertical-align:middle;}
+  table.manifest tbody tr:last-child td{border-bottom:none;}
+  table.manifest tbody tr:hover{background:rgba(242,169,59,0.03);}
+  table.manifest tbody tr.just-scanned{animation:flashRow .9s ease;}
+  @keyframes flashRow{0%{background:rgba(70,179,120,0.18);}100%{background:transparent;}}
+  .sku-cell{font-family:var(--mono);font-weight:700;color:var(--amber);}
+  .upc-cell{font-family:var(--mono);font-size:11.5px;color:var(--muted);}
+  .desc-cell{color:var(--muted);font-size:12px;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .qty-cell{font-family:var(--mono);text-align:center;font-weight:600;}
+  .remaining-cell{font-family:var(--mono);text-align:center;font-weight:700;}
+  .remaining-cell.zero{color:var(--green);}
+  .remaining-cell.over{color:var(--red);}
+  .status-chip{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;padding:4px 9px;border-radius:20px;font-family:var(--mono);}
+  .status-chip.pending{background:var(--panel-alt);color:var(--muted);border:1px solid var(--border);}
+  .status-chip.progress{background:rgba(242,169,59,0.1);color:var(--amber);border:1px solid var(--amber-deep);}
+  .status-chip.complete{background:rgba(70,179,120,0.1);color:var(--green);border:1px solid rgba(70,179,120,0.5);}
+  .status-chip.over{background:rgba(228,87,46,0.1);color:var(--red);border:1px solid rgba(228,87,46,0.5);}
+  .row-controls{display:flex;gap:6px;align-items:center;justify-content:flex-end;}
+  .mini-btn{width:24px;height:24px;border-radius:6px;border:1px solid var(--border);background:var(--panel-alt);cursor:pointer;font-family:var(--mono);font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;color:var(--muted);}
+  .mini-btn:hover{border-color:var(--muted-dim);color:var(--text);}
+  .empty-row td{padding:24px;text-align:center;color:var(--muted);font-size:13px;}
+
+  .log-panel{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:14px 16px;}
+  .log-panel h3{font-family:var(--disp);font-size:13px;margin:0 0 10px;text-transform:uppercase;letter-spacing:0.4px;}
+  .log-list{max-height:200px;overflow-y:auto;display:flex;flex-direction:column-reverse;}
+  .log-item{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid var(--border-soft);font-size:12px;font-family:var(--mono);}
+  .log-item:first-child{border-bottom:none;}
+  .log-item .t{color:var(--muted);width:68px;flex-shrink:0;}
+  .log-item .c{flex:1;font-weight:600;color:var(--text);}
+  .log-item .r{width:110px;text-align:right;font-weight:700;}
+  .log-item.ok .r{color:var(--green);}
+  .log-item.warn .r{color:var(--amber);}
+  .log-item.err .r{color:#ffb199;}
+  .log-empty{color:var(--muted);font-size:12.5px;padding:6px 0;}
+
+  table.packlib{width:100%;border-collapse:collapse;font-size:12.5px;}
+  table.packlib th{text-align:left;font-family:var(--mono);font-size:10px;text-transform:uppercase;color:var(--muted);padding:6px 8px;border-bottom:1px solid var(--border);}
+  table.packlib td{padding:6px 8px;border-bottom:1px solid var(--border-soft);color:var(--text);}
+  table.packlib input{width:56px;font-family:var(--mono);font-weight:600;text-align:center;border:1px solid var(--border);background:var(--panel-alt);color:var(--text);border-radius:6px;padding:4px;}
+  .lib-empty{color:var(--muted);font-size:12px;padding:8px 0;}
+
+  .upc-form{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;margin-bottom:14px;}
+  .upc-form input{background:var(--panel-alt);border:1px solid var(--border);border-radius:7px;padding:9px 11px;color:var(--text);font-family:var(--mono);font-size:13px;}
+  .upc-form input:focus{outline:none;border-color:var(--amber);}
+
+  .session-timer{font-family:var(--mono);font-size:20px;font-weight:700;color:var(--blue);text-align:center;padding:8px 0;}
+  .session-timer .l{font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:0.4px;text-align:center;display:block;font-weight:400;}
+
+  .footer-note{text-align:center;color:var(--muted-dim);font-size:11px;margin-top:24px;font-family:var(--mono);}
+  [hidden]{display:none !important;}
+  :focus-visible{outline:2px solid var(--amber);outline-offset:2px;}
+
+  @media(max-width:900px){
+    .layout{flex-direction:column;}
+    .sidebar{width:100%;position:static;height:auto;border-right:none;border-bottom:1px solid var(--border);}
+    .desc-cell{display:none;}
+  }
+</style>
+</head>
+<body>
+
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-card">
+    <div class="brand">
+      <div class="logo-badge"><span>OA</span></div>
+      <div><h1>Meridian</h1><p>Outbound Audit</p></div>
+    </div>
+    <h2>Sign in to audit</h2>
+    <div class="login-error" id="loginError"></div>
+    <div class="field">
+      <label for="loginUsername">Username</label>
+      <input type="text" id="loginUsername" autocomplete="username">
+    </div>
+    <div class="field">
+      <label for="loginPassword">Password</label>
+      <input type="password" id="loginPassword" autocomplete="current-password">
+    </div>
+    <button class="btn primary wide" id="loginBtn">Log in</button>
+    <div class="login-hint">First time? Default login is <b>admin / admin</b>.<br>Set up real accounts under Settings after logging in.</div>
+  </div>
+</div>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="logo-badge"><span>OA</span></div>
+    <div><h1>Meridian</h1><p>Outbound Audit &middot; Container Scan</p></div>
+  </div>
+  <div class="topbar-right">
+    <span class="pill" id="sheetSyncPill">Sheet sync: not configured</span>
+    <span class="pill" id="datasetPill">No manifest data loaded</span>
+    <span class="pill" id="containerPill" hidden></span>
+    <span class="pill amber" id="userPill" hidden></span>
+    <button class="btn ghost sm" id="upcTopbarBtn" hidden>UPC Mapping</button>
+    <button class="btn ghost sm" id="settingsTopbarBtn" hidden>&#9881; Settings</button>
+    <button class="btn ghost sm" id="logoutBtn" hidden>Log out</button>
+  </div>
+</div>
+
+<div class="layout">
+
+  <div class="sidebar">
+
+    <div class="card">
+      <h2><span class="num">1</span> Manifest Data</h2>
+      <p class="hint">Uploaded by the clerical team &mdash; the raw picking-activity export, not a manually prepared sheet. Every container in the file becomes scannable below.</p>
+      <div class="dropzone" id="datasetDropzone">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+        <div class="dz-title">Drop picking activity export</div>
+        <div class="dz-sub">.csv or .xlsx &mdash; click to browse</div>
+        <input type="file" id="datasetInput" accept=".csv,.xlsx,.xls">
+      </div>
+      <div class="file-status" id="datasetStatus"><span class="dot"></span><span id="datasetStatusText"></span></div>
+      <div class="btn-row" style="margin-top:10px;">
+        <button class="btn ghost sm" id="datasetRefreshBtn">&#8635; Refresh from shared sheet</button>
+        <button class="btn ghost sm" id="clearDatasetBtn" style="display:none;">Clear dataset</button>
+      </div>
+    </div>
+
+    <div class="card" id="containerCard" hidden>
+      <h2><span class="num">2</span> Active Container</h2>
+      <p class="hint" id="containerCardHint">Scan a container ID in the workspace to begin.</p>
+      <button class="btn ghost wide sm" id="changeContainerBtn" hidden>Change container</button>
+    </div>
+
+    <div class="card">
+      <h2><span class="num">3</span> Productivity</h2>
+      <p class="hint">Start/end timestamps are captured per container audit so you can track time spent.</p>
+      <div class="session-timer" id="sessionTimer" hidden>
+        <span id="sessionTimerValue">00:00:00</span>
+        <span class="l">Elapsed on current container</span>
+      </div>
+      <button class="btn ghost wide sm" id="exportProductivityBtn">Export productivity report</button>
+    </div>
+
+  </div>
+
+  <div class="workspace">
+
+    <div id="containerHero" class="container-hero">
+      <div class="eyebrow">Step 1</div>
+      <h2>Scan the container ID</h2>
+      <p>Scan or type the container ID on this shipment. Its manifest lines will populate automatically from the loaded picking-activity data.</p>
+      <div class="container-scan-wrap">
+        <input type="text" id="containerInput" placeholder="SCAN CONTAINER ID" autocomplete="off" disabled>
+      </div>
+      <div class="dataset-waiting" id="datasetWaitingNote">Waiting on manifest data from the clerical team&hellip;</div>
+      <div id="notfoundBox" class="notfound-box" hidden></div>
+    </div>
+
+    <div id="auditWorkspace" hidden>
+
+      <div class="container-strip">
+        <div>
+          <div class="cid" id="activeCid"></div>
+          <div class="cid-sub" id="activeCidSub"></div>
+        </div>
+        <div class="btn-row">
+          <button class="btn ghost sm" id="changeContainerBtn2">Change container</button>
+          <button class="btn primary sm" id="finishAuditBtn">Finish audit &amp; export PDF</button>
+        </div>
+      </div>
+
+      <div id="pdfUnavailableBanner" class="over-banner" hidden>
+        &#9888; PDF export library failed to load, so <b>Finish audit</b> can't generate a PDF right now. Check your internet connection and reload the page. (Scanning and Save progress still work normally.)
+      </div>
+
+      <div class="stats-row">
+        <div class="stat"><div class="n" id="statLines">0/0</div><div class="l">Lines</div></div>
+        <div class="stat"><div class="n" id="statExpected">0</div><div class="l">Expected</div></div>
+        <div class="stat"><div class="n" id="statScanned">0</div><div class="l">Scanned</div></div>
+        <div class="stat" id="statRemainingBox"><div class="n" id="statRemaining">0</div><div class="l">Remaining</div></div>
+      </div>
+      <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+
+      <div class="scan-panel">
+        <label for="scanInput">Scan piece &mdash; SKU or UPC</label>
+        <div class="scan-row">
+          <input type="text" id="scanInput" placeholder="Scan or type a code and press Enter" autocomplete="off">
+          <div class="scan-qty-wrap">
+            <span class="sq-label">Qty</span>
+            <input type="number" id="scanQtyInput" min="1" value="1" title="How many units this scan represents">
+          </div>
+        </div>
+        <div class="scan-feedback" id="scanFeedback">Ready &mdash; scan the first piece to begin.</div>
+        <div class="scan-panel-actions">
+          <button class="btn ghost sm" id="undoBtn">&#8630; Undo last scan</button>
+        </div>
+      </div>
+
+      <div id="overBanner" class="over-banner" hidden></div>
+
+      <div class="toolbar">
+        <h3>Manifest</h3>
+        <div class="search-box">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#8a94a3" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          <input type="text" id="tableSearch" placeholder="Filter SKU or description">
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="manifest">
+          <thead><tr>
+            <th>SKU</th><th>UPC</th><th>Description</th>
+            <th style="text-align:center">Expected</th>
+            <th style="text-align:center">Scanned</th>
+            <th style="text-align:center">Remaining</th>
+            <th>Status</th><th></th>
+          </tr></thead>
+          <tbody id="manifestBody"></tbody>
+        </table>
+      </div>
+
+      <div class="log-panel">
+        <h3>Scan activity</h3>
+        <div class="log-list" id="logList"><div class="log-empty">No scans yet.</div></div>
+      </div>
+
+      <div class="card" style="margin-top:16px;">
+        <h2 style="margin-bottom:6px;">Done auditing this container?</h2>
+        <p class="hint">Finish audit stops the timer and downloads a PDF report for this container. Save progress just pauses your work so you can resume later &mdash; it does not stop the timer or export anything.</p>
+        <div class="btn-row">
+          <button class="btn primary" id="finishAuditBtn2">Finish audit &amp; export PDF</button>
+        </div>
+      </div>
+
+      <div class="btn-row" style="margin-top:16px;">
+        <button class="btn ghost sm" id="saveProgressBtn">Save progress (pause for later)</button>
+        <button class="btn ghost sm" id="loadProgressBtn">Resume progress</button>
+        <input type="file" id="progressInput" accept=".json" hidden>
+        <button class="btn ghost sm" id="exportBtn">Export CSV report</button>
+      </div>
+    </div>
+
+    <div class="footer-note">Progress lives in this browser tab only &mdash; save it before closing if you need to resume later.</div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="upcModalOverlay">
+  <div class="modal wide">
+    <div class="modal-head">
+      <h3>UPC &rarr; SKU Mapping</h3>
+      <button class="modal-close" id="upcModalClose">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p class="hint" style="color:var(--muted);font-size:12.5px;margin:0 0 14px;">
+        When a piece only carries a UPC barcode, scanning that UPC will resolve to its SKU automatically. Upload a bulk file once, then add or correct individual parts any time.
+      </p>
+
+      <div class="dropzone" id="upcDropzone" style="margin-bottom:14px;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+        <div class="dz-title">Bulk upload SKU &harr; UPC file</div>
+        <div class="dz-sub">.csv or .xlsx with SKU and UPC columns</div>
+        <input type="file" id="upcBulkInput" accept=".csv,.xlsx,.xls">
+      </div>
+      <div class="file-status" id="upcBulkStatus"><span class="dot"></span><span id="upcBulkStatusText"></span></div>
+
+      <div style="margin:16px 0 8px;font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:0.4px;color:var(--muted);">Add / update one part</div>
+      <div class="upc-form">
+        <input type="text" id="upcFormSku" placeholder="SKU">
+        <input type="text" id="upcFormUpc" placeholder="UPC">
+        <button class="btn primary sm" id="upcFormAddBtn">Save</button>
+      </div>
+
+      <div class="search-box" style="margin-bottom:10px;width:220px;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#8a94a3" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        <input type="text" id="upcSearch" placeholder="Filter SKU or UPC">
+      </div>
+      <div style="max-height:280px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;">
+        <table class="packlib" style="width:100%;">
+          <thead><tr><th>SKU</th><th>UPC</th><th></th></tr></thead>
+          <tbody id="upcTableBody"></tbody>
+        </table>
+      </div>
+      <div class="btn-row" style="margin-top:14px;">
+        <button class="btn ghost sm" id="upcRefreshBtn">&#8635; Refresh from shared sheet</button>
+        <button class="btn ghost sm" id="upcSaveLibBtn">Save mapping file</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="settingsModalOverlay">
+  <div class="modal wide">
+    <div class="modal-head">
+      <h3>Settings &mdash; Users</h3>
+      <button class="modal-close" id="settingsModalClose">&times;</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="settings-lock" id="settingsLock">
+        <p>Enter the settings password to add, edit, or remove auditor accounts.</p>
+        <div class="field" style="max-width:260px;margin:0 auto 10px;">
+          <input type="password" id="settingsUnlockInput" placeholder="Settings password">
+        </div>
+        <div class="login-error" id="settingsUnlockError"></div>
+        <button class="btn primary" id="settingsUnlockBtn">Unlock</button>
+      </div>
+
+      <div class="settings-unlocked" id="settingsUnlockedPanel">
+        <div style="margin-bottom:8px;font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:0.4px;color:var(--muted);">Auditor accounts</div>
+        <div style="max-height:240px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;margin-bottom:14px;">
+          <table class="usertable">
+            <thead><tr><th>Username</th><th>Password</th><th></th></tr></thead>
+            <tbody id="userTableBody"></tbody>
+          </table>
+        </div>
+
+        <div style="margin-bottom:8px;font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:0.4px;color:var(--muted);">Add account</div>
+        <div class="upc-form">
+          <input type="text" id="userFormUsername" placeholder="Username">
+          <input type="text" id="userFormPassword" placeholder="Password">
+          <button class="btn primary sm" id="userFormAddBtn">Add</button>
+        </div>
+
+        <div style="margin:18px 0 8px;font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:0.4px;color:var(--muted);">Settings password</div>
+        <div class="upc-form" style="grid-template-columns:1fr auto;">
+          <input type="text" id="settingsNewPassword" placeholder="New settings password">
+          <button class="btn ghost sm" id="settingsChangePasswordBtn">Update</button>
+        </div>
+
+        <div class="btn-row" style="margin-top:16px;">
+          <button class="btn ghost sm" id="usersRefreshBtn">&#8635; Refresh from shared sheet</button>
+          <button class="btn ghost sm" id="saveUsersBtn">Save users file</button>
+          <button class="btn ghost sm" id="loadUsersBtn">Load users file</button>
+          <input type="file" id="usersFileInput" accept=".json" hidden>
+        </div>
+
+        <div class="security-note">
+          These accounts are for auditor attribution only — not secure authentication. Usernames and passwords are stored in plain text: in this browser's memory, in any exported file, and — if a shared sheet is configured — in that Google Sheet, readable by anyone with the Apps Script URL. Don't reuse a sensitive password here.
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="duplicateAuditModalOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Already Audited</h3>
+      <button class="modal-close" id="duplicateAuditModalClose">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:13.5px;color:var(--text);line-height:1.6;margin:0 0 14px;" id="duplicateAuditMessage"></p>
+      <div class="btn-row">
+        <button class="btn primary" id="duplicateAuditAgainBtn">Audit again</button>
+        <button class="btn ghost" id="duplicateAuditBackBtn">Go back</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  const CONFIG = {
+    containerAlertRecipients: ["Andres.Puente@cevalogistics.com", "jacob.fowler@cevalogistics.com"],
+    // Paste the deployed Google Apps Script Web App URL here to enable shared
+    // "already audited" checking and logging across everyone using this file.
+    // Leave blank to run fully offline (no duplicate-audit detection, no shared log).
+    sheetsWebAppUrl: ""
+  };
+
+  let rawDataset = [];
+  let items = [];
+  let scanLog = [];
+  let upcMap = {};
+  let skuToUpc = {};
+  let currentContainerId = null;
+  let pendingContainerLaunch = null; // {cid, rows} awaiting the duplicate-audit prompt
+
+  // auth / productivity state
+  let users = [{ username: 'admin', password: 'admin' }];
+  let settingsPassword = 'admin123';
+  let currentUser = null;
+  let containerSessions = [];  // committed: {containerId, user, start, end}
+  let activeSession = null;    // in progress: {containerId, user, start, lastActivity}
+  let sessionTimerHandle = null;
+
+  const el = (id) => document.getElementById(id);
+  const normCode = (s) => String(s||'').trim().toUpperCase();
+
+  /* ================= AUTH ================= */
+  function attemptLogin(username, password){
+    const u = String(username||'').trim();
+    const p = String(password||'');
+    const match = users.find(x => x.username.toLowerCase() === u.toLowerCase() && x.password === p);
+    if(!match){
+      const errBox = el('loginError');
+      errBox.textContent = 'Incorrect username or password.';
+      errBox.classList.add('show');
+      return false;
+    }
+    currentUser = match.username;
+    el('loginError').classList.remove('show');
+    el('loginOverlay').classList.add('hidden');
+    el('userPill').hidden = false;
+    el('userPill').textContent = 'Signed in: ' + currentUser;
+    el('upcTopbarBtn').hidden = false;
+    el('settingsTopbarBtn').hidden = false;
+    el('logoutBtn').hidden = false;
+    el('loginUsername').value = '';
+    el('loginPassword').value = '';
+
+    if(sheetSyncConfigured()){
+      Promise.all([pullManifestFromSheet(true), pullUpcMapFromSheet(true)]).then(([manifestOk, upcOk]) => {
+        if(manifestOk || upcOk) toast('Shared manifest and UPC data loaded.');
+      });
+    }
+    return true;
+  }
+
+  function logout(){
+    currentUser = null;
+    el('userPill').hidden = true;
+    el('upcTopbarBtn').hidden = true;
+    el('settingsTopbarBtn').hidden = true;
+    el('logoutBtn').hidden = true;
+    el('loginOverlay').classList.remove('hidden');
+    focusLoginInput();
+  }
+
+  function focusLoginInput(){
+    setTimeout(()=>{ const inp = el('loginUsername'); if(inp) inp.focus(); }, 30);
+  }
+
+  /* ================= SETTINGS (users) ================= */
+  function openSettingsModal(){
+    el('settingsModalOverlay').classList.remove('hidden');
+    el('settingsUnlockedPanel').classList.remove('show');
+    el('settingsLock').hidden = false;
+    el('settingsUnlockInput').value = '';
+    el('settingsUnlockError').classList.remove('show');
+    setTimeout(()=>{ const inp = el('settingsUnlockInput'); if(inp) inp.focus(); }, 30);
+  }
+  function closeSettingsModal(){ el('settingsModalOverlay').classList.add('hidden'); }
+
+  function unlockSettings(){
+    const val = el('settingsUnlockInput').value;
+    if(val !== settingsPassword){
+      const err = el('settingsUnlockError');
+      err.textContent = 'Incorrect settings password.';
+      err.classList.add('show');
+      return;
+    }
+    el('settingsLock').hidden = true;
+    el('settingsUnlockedPanel').classList.add('show');
+    renderUserTable();
+  }
+
+  function renderUserTable(){
+    const body = el('userTableBody');
+    if(users.length === 0){
+      body.innerHTML = `<tr><td colspan="3" class="lib-empty">No accounts yet.</td></tr>`;
+      return;
+    }
+    body.innerHTML = users.map((u, i) => `
+      <tr>
+        <td><input type="text" data-useridx="${i}" data-field="username" value="${escapeHtml(u.username)}"></td>
+        <td><input type="text" data-useridx="${i}" data-field="password" value="${escapeHtml(u.password)}"></td>
+        <td><button class="mini-btn" data-userremove="${i}" title="Remove">&times;</button></td>
+      </tr>
+    `).join('');
+    body.querySelectorAll('input[data-useridx]').forEach(inp=>{
+      inp.addEventListener('change', () => {
+        const idx = parseInt(inp.dataset.useridx, 10);
+        const field = inp.dataset.field;
+        const val = inp.value.trim();
+        if(!val){ inp.value = users[idx][field]; return; }
+        users[idx][field] = val;
+        pushUsersToSheet();
+      });
+    });
+    body.querySelectorAll('[data-userremove]').forEach(btn=>{
+      btn.addEventListener('click', () => {
+        if(users.length <= 1){ toast('At least one account must remain.', true); return; }
+        users.splice(parseInt(btn.dataset.userremove, 10), 1);
+        renderUserTable();
+        pushUsersToSheet();
+      });
+    });
+  }
+
+  function addUser(username, password){
+    const u = String(username||'').trim();
+    const p = String(password||'').trim();
+    if(!u || !p){ toast('Enter both a username and a password.', true); return; }
+    if(users.some(x => x.username.toLowerCase() === u.toLowerCase())){ toast('That username already exists.', true); return; }
+    users.push({ username: u, password: p });
+    renderUserTable();
+    toast('Account added.');
+    pushUsersToSheet();
+  }
+
+  function changeSettingsPassword(newPassword){
+    const p = String(newPassword||'').trim();
+    if(!p){ toast('Enter a new settings password.', true); return; }
+    settingsPassword = p;
+    el('settingsNewPassword').value = '';
+    toast('Settings password updated.');
+    pushUsersToSheet();
+  }
+
+  function saveUsersFile(){
+    downloadText(JSON.stringify({ savedAt: new Date().toISOString(), users, settingsPassword }, null, 2), `audit-users-${timestamp()}.json`, 'application/json');
+  }
+  function loadUsersFile(file){
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try{
+        const snap = JSON.parse(e.target.result);
+        if(!Array.isArray(snap.users) || snap.users.length === 0) throw new Error('File does not look like a saved users file.');
+        users = snap.users;
+        if(snap.settingsPassword) settingsPassword = snap.settingsPassword;
+        renderUserTable();
+        toast(`${users.length} account${users.length===1?'':'s'} loaded.`);
+      }catch(err){
+        toast('Could not load that users file: ' + err.message, true);
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  /* ================= PRODUCTIVITY / SESSIONS ================= */
+  function startSession(containerId){
+    if(activeSession) commitSession();
+    const now = new Date();
+    activeSession = { containerId, user: currentUser, start: now, lastActivity: now };
+    startSessionTimer();
+  }
+  function touchSession(){
+    if(activeSession) activeSession.lastActivity = new Date();
+  }
+  function commitSession(finished){
+    if(!activeSession) return;
+    containerSessions.push({
+      containerId: activeSession.containerId,
+      user: activeSession.user,
+      start: activeSession.start,
+      end: activeSession.lastActivity,
+      finished: !!finished
+    });
+    activeSession = null;
+    stopSessionTimer();
+  }
+  function startSessionTimer(){
+    el('sessionTimer').hidden = false;
+    updateSessionTimerDisplay();
+    clearInterval(sessionTimerHandle);
+    sessionTimerHandle = setInterval(updateSessionTimerDisplay, 1000);
+  }
+  function stopSessionTimer(){
+    clearInterval(sessionTimerHandle);
+    el('sessionTimer').hidden = true;
+  }
+  function updateSessionTimerDisplay(){
+    if(!activeSession) return;
+    const seconds = Math.floor((new Date() - activeSession.start) / 1000);
+    el('sessionTimerValue').textContent = formatDuration(seconds);
+  }
+  function formatDuration(totalSeconds){
+    const h = Math.floor(totalSeconds / 3600);
+    const m = Math.floor((totalSeconds % 3600) / 60);
+    const s = totalSeconds % 60;
+    const pad = n => String(n).padStart(2,'0');
+    return `${pad(h)}:${pad(m)}:${pad(s)}`;
+  }
+  function exportProductivity(){
+    const rows = [['Container ID','User','Start','End','Duration','Status']];
+    containerSessions.forEach(s => {
+      const seconds = Math.floor((new Date(s.end) - new Date(s.start)) / 1000);
+      rows.push([s.containerId, s.user, new Date(s.start).toLocaleString(), new Date(s.end).toLocaleString(), formatDuration(seconds), s.finished ? 'Finished' : 'Switched']);
+    });
+    if(activeSession){
+      const now = new Date();
+      const seconds = Math.floor((now - activeSession.start) / 1000);
+      rows.push([activeSession.containerId, activeSession.user, new Date(activeSession.start).toLocaleString(), now.toLocaleString(), formatDuration(seconds), 'In progress']);
+    }
+    if(rows.length === 1){ toast('No container sessions recorded yet.', true); return; }
+    const csv = rows.map(r => r.map(csvEscape).join(',')).join('\n');
+    downloadText(csv, `outbound-audit-productivity-${timestamp()}.csv`, 'text/csv');
+  }
+
+  function toast(msg, isError){
+    const t = el('toast');
+    t.textContent = msg;
+    t.className = 'toast show' + (isError ? ' error' : '');
+    clearTimeout(t._timer);
+    t._timer = setTimeout(()=>{ t.className = 'toast'; }, isError ? 6000 : 3200);
+  }
+
+  function pdfLibraryAvailable(){
+    return typeof window.jspdf !== 'undefined' && typeof window.jspdf.jsPDF !== 'undefined';
+  }
+  function checkPdfLibrary(){
+    const ok = pdfLibraryAvailable();
+    el('pdfUnavailableBanner').hidden = ok;
+    return ok;
+  }
+
+  /* ================= GOOGLE SHEET SYNC (shared audit log, manifest, UPC map, users) ================= */
+  function sheetSyncConfigured(){
+    return !!(CONFIG.sheetsWebAppUrl && CONFIG.sheetsWebAppUrl.trim());
+  }
+  function setSyncStatus(state){
+    const pill = el('sheetSyncPill');
+    if(!sheetSyncConfigured()){
+      pill.textContent = 'Sheet sync: not configured';
+      pill.className = 'pill';
+      return;
+    }
+    if(state === 'checking'){
+      pill.textContent = 'Sheet sync: checking…';
+      pill.className = 'pill amber';
+    }else if(state === 'error'){
+      pill.textContent = 'Sheet sync: connection issue';
+      pill.className = 'pill warn';
+    }else{
+      pill.textContent = 'Sheet sync: connected';
+      pill.className = 'pill ok';
+    }
+  }
+  function initSyncStatus(){
+    setSyncStatus(sheetSyncConfigured() ? 'connected' : 'not-configured');
+  }
+
+  async function sheetGet_(action, extraParams){
+    if(!sheetSyncConfigured()) return null;
+    try{
+      setSyncStatus('checking');
+      let url = CONFIG.sheetsWebAppUrl + '?action=' + encodeURIComponent(action);
+      if(extraParams){
+        Object.keys(extraParams).forEach(k => { url += '&' + k + '=' + encodeURIComponent(extraParams[k]); });
+      }
+      const res = await fetch(url);
+      const data = await res.json();
+      setSyncStatus('connected');
+      return data;
+    }catch(err){
+      console.error('Sheet GET (' + action + ') failed:', err);
+      setSyncStatus('error');
+      return null;
+    }
+  }
+
+  // Uses text/plain as the content type (rather than application/json) so the browser
+  // treats this as a "simple request" and skips the CORS preflight, which Apps Script
+  // Web Apps generally don't handle. Never throws — always resolves.
+  async function sheetPost_(payload){
+    if(!sheetSyncConfigured()) return { ok:false, skipped:true };
+    try{
+      setSyncStatus('checking');
+      const res = await fetch(CONFIG.sheetsWebAppUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      setSyncStatus('connected');
+      return data && typeof data.ok !== 'undefined' ? data : { ok: true };
+    }catch(err){
+      console.error('Sheet POST (' + (payload && payload.action) + ') failed:', err);
+      setSyncStatus('error');
+      return { ok:false, error: String(err) };
+    }
+  }
+
+  // Returns the most recent Finished record for this container from the shared sheet,
+  // or null if none found, sync isn't configured, or the check fails (fails open by design
+  // so a network hiccup never blocks an auditor from working).
+  async function checkContainerAudited(cid){
+    const data = await sheetGet_('checkAudit', { containerId: cid });
+    if(data && data.found && data.latest) return data.latest;
+    return null;
+  }
+
+  async function logFinishedAuditToSheet(record){
+    return sheetPost_({ action: 'logAudit', ...record });
+  }
+
+  // ---- Manifest ----
+  async function pullManifestFromSheet(silent){
+    const data = await sheetGet_('getManifest');
+    if(!data || !Array.isArray(data.rows)) return false;
+    if(data.rows.length === 0){
+      if(!silent) toast('Shared manifest data is empty — nothing to load yet.', true);
+      return false;
+    }
+    rawDataset = data.rows.filter(r => r.containerId && r.sku);
+    const containers = new Set(rawDataset.map(r=>normCode(r.containerId)));
+    el('datasetStatus').classList.add('show');
+    el('datasetStatusText').textContent = `${rawDataset.length} line${rawDataset.length===1?'':'s'} across ${containers.size} container${containers.size===1?'':'s'} loaded from the shared sheet.`;
+    el('clearDatasetBtn').style.display = 'inline-flex';
+    el('datasetPill').textContent = `${containers.size} containers loaded`;
+    el('datasetPill').className = 'pill ok';
+    el('containerInput').disabled = false;
+    el('datasetWaitingNote').hidden = true;
+    if(!silent) toast('Manifest data loaded from the shared sheet.');
+    return true;
+  }
+  async function pushManifestToSheet(rows){
+    if(!sheetSyncConfigured()) return { ok:false, skipped:true };
+    return sheetPost_({ action: 'replaceManifest', rows, uploadedBy: currentUser });
+  }
+
+  // ---- UPC mapping ----
+  async function pullUpcMapFromSheet(silent){
+    const data = await sheetGet_('getUpcMap');
+    if(!data || !Array.isArray(data.entries)) return false;
+    let count = 0;
+    data.entries.forEach(e => { if(addUpcMapping(e.sku, e.upc, true)) count++; });
+    renderUpcTile();
+    if(el('upcModalOverlay') && !el('upcModalOverlay').classList.contains('hidden')) renderUpcTable(el('upcSearch').value);
+    renderManifestTable(currentFilter());
+    if(!silent) toast(`${count} UPC mapping${count===1?'':'s'} loaded from the shared sheet.`);
+    return true;
+  }
+  async function pushUpcMapToSheet(){
+    if(!sheetSyncConfigured()) return { ok:false, skipped:true };
+    const entries = Object.keys(upcMap).map(upc => ({ sku: upcMap[upc], upc: skuToUpc[upcMap[upc]] || upc }));
+    return sheetPost_({ action: 'replaceUpcMap', entries, updatedBy: currentUser });
+  }
+
+  // ---- Users ----
+  async function pullUsersFromSheet(silent){
+    const data = await sheetGet_('getUsers');
+    if(!data || !Array.isArray(data.users)) return false;
+    if(data.users.length === 0) return false; // keep local default rather than risk a lockout
+    users = data.users;
+    if(data.settingsPassword) settingsPassword = data.settingsPassword;
+    if(el('userTableBody')) renderUserTable();
+    if(!silent) toast(`${users.length} account${users.length===1?'':'s'} loaded from the shared sheet.`);
+    return true;
+  }
+  async function pushUsersToSheet(){
+    if(!sheetSyncConfigured()) return { ok:false, skipped:true };
+    return sheetPost_({ action: 'replaceUsers', users, settingsPassword, updatedBy: currentUser });
+  }
+
+  function formatSheetTimestamp(v){
+    if(!v) return 'an unknown time';
+    const d = new Date(v);
+    return isNaN(d.getTime()) ? String(v) : d.toLocaleString();
+  }
+
+  function showDuplicateAuditModal(cid, prior){
+    const who = prior.user || 'someone';
+    const when = formatSheetTimestamp(prior.end || prior.loggedAt);
+    el('duplicateAuditMessage').innerHTML =
+      `Container <b>${escapeHtml(cid)}</b> was already audited by <b>${escapeHtml(who)}</b> on ${escapeHtml(when)}` +
+      (prior.count > 1 ? ` (audited ${prior.count} times total).` : '.') +
+      ` Auditing it again won't overwrite that record — it will simply add a new entry to the shared log.`;
+    el('duplicateAuditModalOverlay').classList.remove('hidden');
+  }
+  function closeDuplicateAuditModal(){
+    el('duplicateAuditModalOverlay').classList.add('hidden');
+  }
+
+  const HEADER_KEYS = {
+    containerId: ['container id','container'],
+    sku: ['sku'],
+    description: ['sku description','description','item description'],
+    qty: ['qty','quantity'],
+    upc: ['upc','upc code','barcode','ean']
+  };
+  function normHeader(s){ return String(s||'').toLowerCase().trim(); }
+  function detectHeaderRow(rows, wantedKeys){
+    const limit = Math.min(rows.length, 6);
+    for(let r=0;r<limit;r++){
+      const row = rows[r];
+      if(!row) continue;
+      const map = {};
+      let hits = 0;
+      row.forEach((cell, c) => {
+        const h = normHeader(cell);
+        if(!h) return;
+        wantedKeys.forEach(key => {
+          if(map[key] !== undefined) return;
+          if(HEADER_KEYS[key].some(kw => h === kw || h.includes(kw))){
+            map[key] = c; hits++;
+          }
+        });
+      });
+      if(hits >= Math.min(2, wantedKeys.length)) return { rowIndex: r, map };
+    }
+    return null;
+  }
+  function toNumber(v){
+    if(v === null || v === undefined || v === '') return NaN;
+    if(typeof v === 'number') return v;
+    return parseFloat(String(v).replace(/[, ]/g,''));
+  }
+  function workbookToRows(wb){
+    const sheetName = wb.SheetNames[0];
+    return XLSX.utils.sheet_to_json(wb.Sheets[sheetName], { header: 1, raw: true, defval: '' });
+  }
+  function readWorkbook(file, cb){
+    const reader = new FileReader();
+    reader.onerror = () => cb(new Error('Could not read that file.'));
+    reader.onload = (e) => {
+      try{
+        const data = new Uint8Array(e.target.result);
+        const wb = XLSX.read(data, { type: 'array' });
+        cb(null, workbookToRows(wb));
+      }catch(err){ cb(err); }
+    };
+    reader.readAsArrayBuffer(file);
+  }
+
+  function parseRawDataset(rows){
+    const header = detectHeaderRow(rows, ['containerId','sku','qty','description']);
+    if(!header || header.map.containerId === undefined || header.map.sku === undefined || header.map.qty === undefined){
+      throw new Error('Could not find Container ID / SKU / Qty columns in this file.');
+    }
+    const out = [];
+    for(let r = header.rowIndex + 1; r < rows.length; r++){
+      const row = rows[r] || [];
+      const containerId = String(row[header.map.containerId] ?? '').trim();
+      const sku = String(row[header.map.sku] ?? '').trim();
+      const qty = toNumber(row[header.map.qty]);
+      if(!containerId || !sku) continue;
+      if(!Number.isFinite(qty) || qty <= 0) continue;
+      out.push({
+        containerId,
+        sku,
+        description: header.map.description !== undefined ? String(row[header.map.description] ?? '').trim() : '',
+        qty
+      });
+    }
+    return out;
+  }
+
+  function handleDatasetFile(file){
+    readWorkbook(file, (err, rows) => {
+      if(err){ toast(err.message, true); return; }
+      try{
+        const parsed = parseRawDataset(rows);
+        if(parsed.length === 0) throw new Error('No usable Container ID / SKU / Qty rows found.');
+        rawDataset = parsed;
+        const containers = new Set(parsed.map(r=>normCode(r.containerId)));
+        el('datasetStatus').classList.add('show');
+        el('datasetStatusText').textContent = `${parsed.length} line${parsed.length===1?'':'s'} across ${containers.size} container${containers.size===1?'':'s'} loaded.`;
+        el('clearDatasetBtn').style.display = 'inline-flex';
+        el('datasetPill').textContent = `${containers.size} containers loaded`;
+        el('datasetPill').className = 'pill ok';
+        el('containerInput').disabled = false;
+        el('datasetWaitingNote').hidden = true;
+        if(!sheetSyncConfigured()){
+          toast('Manifest data loaded.');
+        }else{
+          pushManifestToSheet(rawDataset).then(res => {
+            toast(res && res.ok ? 'Manifest data loaded and shared with everyone.' : 'Manifest data loaded, but sharing it failed (check your connection).', !(res && res.ok));
+          });
+        }
+      }catch(e2){
+        toast('Could not parse this file: ' + e2.message, true);
+      }
+    });
+  }
+
+  function clearDataset(){
+    rawDataset = [];
+    el('datasetStatus').classList.remove('show');
+    el('clearDatasetBtn').style.display = 'none';
+    el('datasetPill').textContent = 'No manifest data loaded';
+    el('datasetPill').className = 'pill';
+    el('containerInput').disabled = true;
+    el('datasetWaitingNote').hidden = false;
+    el('datasetInput').value = '';
+  }
+
+  function parseUpcRows(rows){
+    const header = detectHeaderRow(rows, ['sku','upc']);
+    if(!header || header.map.sku === undefined || header.map.upc === undefined){
+      throw new Error('Could not find SKU / UPC columns in this file.');
+    }
+    const out = [];
+    for(let r = header.rowIndex + 1; r < rows.length; r++){
+      const row = rows[r] || [];
+      const sku = String(row[header.map.sku] ?? '').trim();
+      const upc = String(row[header.map.upc] ?? '').trim();
+      if(!sku || !upc) continue;
+      out.push({ sku, upc });
+    }
+    return out;
+  }
+
+  function addUpcMapping(sku, upc){
+    const nSku = normCode(sku), nUpc = normCode(upc);
+    if(!nSku || !nUpc) return false;
+    upcMap[nUpc] = nSku;
+    skuToUpc[nSku] = upc.trim();
+    return true;
+  }
+
+  function handleUpcBulkFile(file){
+    readWorkbook(file, (err, rows) => {
+      if(err){ toast(err.message, true); return; }
+      try{
+        const parsed = parseUpcRows(rows);
+        if(parsed.length === 0) throw new Error('No usable SKU / UPC rows found.');
+        let count = 0;
+        parsed.forEach(p => { if(addUpcMapping(p.sku, p.upc)) count++; });
+        el('upcBulkStatus').classList.add('show');
+        el('upcBulkStatusText').textContent = `${count} mapping${count===1?'':'s'} loaded.`;
+        renderUpcTable();
+        renderUpcTile();
+        renderManifestTable(currentFilter());
+        if(!sheetSyncConfigured()){
+          toast('UPC mapping updated.');
+        }else{
+          pushUpcMapToSheet().then(res => {
+            toast(res && res.ok ? 'UPC mapping updated and shared with everyone.' : 'UPC mapping updated, but sharing it failed (check your connection).', !(res && res.ok));
+          });
+        }
+      }catch(e2){
+        toast('Could not parse this file: ' + e2.message, true);
+      }
+    });
+  }
+
+  function renderUpcTile(){
+    const count = Object.keys(upcMap).length;
+    el('upcTopbarBtn').textContent = count > 0 ? `UPC Mapping (${count})` : 'UPC Mapping';
+  }
+
+  function renderUpcTable(filterText){
+    const body = el('upcTableBody');
+    const q = (filterText||'').toLowerCase().trim();
+    const entries = Object.keys(upcMap).map(upc => ({ upc, sku: upcMap[upc] }))
+      .filter(e => !q || e.upc.toLowerCase().includes(q) || e.sku.toLowerCase().includes(q))
+      .sort((a,b)=> a.sku.localeCompare(b.sku));
+    if(entries.length === 0){
+      body.innerHTML = `<tr><td colspan="3" class="lib-empty">No UPC mappings yet.</td></tr>`;
+      return;
+    }
+    body.innerHTML = entries.map(e => `
+      <tr>
+        <td class="sku-cell">${escapeHtml(e.sku)}</td>
+        <td class="upc-cell">${escapeHtml(e.upc)}</td>
+        <td><button class="mini-btn" data-upcremove="${escapeHtml(e.upc)}" title="Remove">&times;</button></td>
+      </tr>
+    `).join('');
+    body.querySelectorAll('[data-upcremove]').forEach(btn=>{
+      btn.addEventListener('click', () => {
+        const upc = btn.dataset.upcremove;
+        const sku = upcMap[upc];
+        delete upcMap[upc];
+        if(sku && skuToUpc[sku] && normCode(skuToUpc[sku]) === upc) delete skuToUpc[sku];
+        renderUpcTable(el('upcSearch').value);
+        renderUpcTile();
+        renderManifestTable(currentFilter());
+        pushUpcMapToSheet();
+      });
+    });
+  }
+
+  function saveUpcLibrary(){
+    downloadText(JSON.stringify({ savedAt: new Date().toISOString(), upcMap, skuToUpc }, null, 2), `upc-mapping-${timestamp()}.json`, 'application/json');
+  }
+
+  async function scanContainer(rawId){
+    const cid = String(rawId||'').trim();
+    if(!cid) return;
+    if(rawDataset.length === 0){ toast('Manifest data has not been loaded yet.', true); return; }
+
+    const rows = rawDataset.filter(r => normCode(r.containerId) === normCode(cid));
+    el('notfoundBox').hidden = true;
+
+    if(rows.length === 0){
+      showContainerNotFound(cid);
+      return;
+    }
+
+    el('containerInput').disabled = true;
+    const prior = await checkContainerAudited(cid);
+    el('containerInput').disabled = false;
+
+    if(prior){
+      pendingContainerLaunch = { cid, rows };
+      showDuplicateAuditModal(cid, prior);
+      return;
+    }
+
+    launchContainerFromRows(cid, rows);
+  }
+
+  function launchContainerFromRows(cid, rows){
+    const grouped = {};
+    rows.forEach(r => {
+      const key = normCode(r.sku);
+      if(!grouped[key]) grouped[key] = { sku: r.sku, description: r.description, expected: 0 };
+      grouped[key].expected += r.qty;
+      if(!grouped[key].description && r.description) grouped[key].description = r.description;
+    });
+
+    items = Object.keys(grouped).map((key, i) => ({
+      id: 'it_' + i,
+      sku: grouped[key].sku,
+      description: grouped[key].description,
+      expected: grouped[key].expected,
+      scanned: 0
+    }));
+    scanLog = [];
+    currentContainerId = cid;
+    startSession(cid);
+    launchAuditWorkspace();
+  }
+
+  function showContainerNotFound(cid){
+    const box = el('notfoundBox');
+    box.hidden = false;
+    box.innerHTML = `
+      <div><b>Container ${escapeHtml(cid)}</b> was not found in the currently loaded manifest data.</div>
+      <div style="margin-top:6px;">This usually means the clerical team hasn't uploaded data for it yet.</div>
+      <div class="btn-row">
+        <a class="btn primary sm" href="${buildContainerMailto(cid)}" style="text-decoration:none;">Draft email to update this container</a>
+        <button class="btn ghost sm" id="notfoundCopyBtn">Copy details</button>
+      </div>
+    `;
+    el('notfoundCopyBtn').addEventListener('click', () => {
+      const text = `Container ID: ${cid}\nRequested at: ${new Date().toLocaleString()}`;
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(text).then(()=>toast('Copied.')).catch(()=>toast('Could not copy.', true));
+      }
+    });
+  }
+
+  function buildContainerMailto(cid){
+    const to = CONFIG.containerAlertRecipients.join(',');
+    const subject = `Outbound Audit - Container ${cid} needs manifest data`;
+    const body = "Hi team,\n\n"
+      + "Container ID " + cid + " was scanned during an outbound audit but no manifest data was found in the current picking activity export.\n\n"
+      + "Could this container's data be added or updated?\n\n"
+      + "Requested at: " + new Date().toLocaleString() + "\n"
+      + "Requested by: (add your name/location)\n\n"
+      + "Thanks!";
+    return "mailto:" + to + "?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
+  }
+
+  function launchAuditWorkspace(){
+    el('containerHero').hidden = true;
+    el('auditWorkspace').hidden = false;
+    el('containerCard').hidden = false;
+    el('containerCardHint').textContent = `Auditing container ${currentContainerId}.`;
+    el('changeContainerBtn').hidden = false;
+    el('activeCid').textContent = currentContainerId;
+    el('activeCidSub').textContent = `${items.length} SKU line${items.length===1?'':'s'} on manifest`;
+    el('containerPill').hidden = false;
+    el('containerPill').textContent = 'Container ' + currentContainerId;
+    el('containerPill').className = 'pill amber';
+    checkPdfLibrary();
+    renderAll();
+    focusScanInput();
+  }
+
+  function changeContainer(){
+    if(items.length && scanLog.length && !confirm('Switch containers? Unsaved progress on this container will be lost.')) return;
+    commitSession(false);
+    resetToContainerHero();
+  }
+
+  function resetToContainerHero(){
+    items = []; scanLog = []; currentContainerId = null;
+    el('containerHero').hidden = false;
+    el('auditWorkspace').hidden = true;
+    el('containerCardHint').textContent = 'Scan a container ID in the workspace to begin.';
+    el('changeContainerBtn').hidden = true;
+    el('containerPill').hidden = true;
+    el('containerInput').value = '';
+    el('notfoundBox').hidden = true;
+    focusContainerInput();
+  }
+
+  async function finishAudit(){
+    if(!checkPdfLibrary()){
+      toast('PDF library did not load — check your internet connection, reload the page, and try again.', true);
+      return;
+    }
+    const totalExpected = items.reduce((s,i)=>s+i.expected,0);
+    const totalScanned = items.reduce((s,i)=>s+Math.min(i.scanned,i.expected),0);
+    const totalOver = items.reduce((s,i)=>s+Math.max(i.scanned-i.expected,0),0);
+    const incompleteLines = items.filter(i => i.expected - i.scanned !== 0).length;
+
+    let warnMsg = `Finish audit for container ${currentContainerId}?`;
+    if(incompleteLines > 0 || totalOver > 0){
+      warnMsg += `\n\nHeads up: ${incompleteLines} line${incompleteLines===1?'':'s'} ${incompleteLines===1?'is':'are'} not at expected quantity` + (totalOver>0 ? ` (${totalOver} unit${totalOver===1?'':'s'} over).` : '.') + ' The PDF will reflect this as-is.';
+    }
+    if(!confirm(warnMsg)) return;
+
+    // snapshot everything needed for the PDF before we touch state
+    const snapshot = {
+      containerId: currentContainerId,
+      user: currentUser,
+      start: activeSession ? activeSession.start : null,
+      items: items.map(i => ({...i})),
+    };
+
+    commitSession(true);
+    const finishedRecord = containerSessions[containerSessions.length - 1];
+    snapshot.start = finishedRecord ? finishedRecord.start : snapshot.start;
+    snapshot.end = finishedRecord ? finishedRecord.end : new Date();
+
+    let pdfOk = true;
+    try{
+      generateAuditPdf(snapshot, totalExpected, totalScanned, totalOver);
+    }catch(err){
+      pdfOk = false;
+      toast('PDF generation failed: ' + err.message, true);
+    }
+
+    if(pdfOk){
+      const durationSeconds = Math.floor((new Date(snapshot.end) - new Date(snapshot.start)) / 1000);
+      const syncResult = await logFinishedAuditToSheet({
+        containerId: snapshot.containerId,
+        user: snapshot.user,
+        start: new Date(snapshot.start).toISOString(),
+        end: new Date(snapshot.end).toISOString(),
+        duration: formatDuration(durationSeconds),
+        status: 'Finished'
+      });
+      if(!sheetSyncConfigured()){
+        toast('Audit finished — PDF saved to your downloads.');
+      }else if(syncResult && syncResult.ok){
+        toast('Audit finished — PDF saved and logged to the shared sheet.');
+      }else{
+        toast('Audit finished — PDF saved, but the shared sheet log failed (check your connection).', true);
+      }
+    }
+
+    resetToContainerHero();
+  }
+
+  function generateAuditPdf(snapshot, totalExpected, totalScanned, totalOver){
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: 'pt', format: 'letter' });
+    const marginX = 40;
+    let y = 50;
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(16);
+    doc.text('Outbound Audit Report', marginX, y);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.setTextColor(120);
+    y += 16;
+    doc.text('Meridian | Outbound Audit', marginX, y);
+    doc.setTextColor(20);
+
+    y += 26;
+    const seconds = Math.floor((new Date(snapshot.end) - new Date(snapshot.start)) / 1000);
+    const infoRows = [
+      ['Container ID', snapshot.containerId],
+      ['Audited by (user ID)', snapshot.user || 'Unknown'],
+      ['Start time', new Date(snapshot.start).toLocaleString()],
+      ['End time', new Date(snapshot.end).toLocaleString()],
+      ['Total duration', formatDuration(seconds)],
+      ['Report generated', new Date().toLocaleString()]
+    ];
+    doc.setFontSize(10);
+    infoRows.forEach(([label, val]) => {
+      doc.setFont('helvetica', 'bold');
+      doc.text(label + ':', marginX, y);
+      doc.setFont('helvetica', 'normal');
+      doc.text(String(val), marginX + 140, y);
+      y += 15;
+    });
+
+    y += 6;
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.text('Summary', marginX, y);
+    y += 16;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    const totalRemaining = Math.max(totalExpected - totalScanned, 0);
+    const summaryLine = `${snapshot.items.length} line${snapshot.items.length===1?'':'s'} — ${totalExpected} expected, ${totalScanned} scanned, ${totalRemaining} remaining` + (totalOver > 0 ? `, ${totalOver} over` : '');
+    doc.text(summaryLine, marginX, y);
+    y += 20;
+
+    const body = snapshot.items.map(item => {
+      const remaining = item.expected - item.scanned;
+      const over = Math.max(item.scanned - item.expected, 0);
+      const upc = skuToUpc[normCode(item.sku)] || '—';
+      let status = 'Pending';
+      if(remaining < 0) status = 'Over +' + (-remaining);
+      else if(remaining === 0) status = 'Complete';
+      else if(item.scanned > 0) status = 'In progress';
+      return [
+        item.sku,
+        upc,
+        item.description || '',
+        String(item.expected),
+        String(item.scanned),
+        String(Math.max(remaining, 0)),
+        status
+      ];
+    });
+
+    doc.autoTable({
+      startY: y,
+      margin: { left: marginX, right: marginX },
+      head: [['SKU','UPC','Description','Expected','Scanned','Remaining','Status']],
+      body: body,
+      styles: { font: 'helvetica', fontSize: 8.5, cellPadding: 4 },
+      headStyles: { fillColor: [26,31,39], textColor: 255 },
+      didParseCell: (data) => {
+        if(data.section === 'body' && data.column.dataKey === 6){
+          const val = String(data.cell.raw);
+          if(val === 'Complete') data.cell.styles.textColor = [30,120,80];
+          else if(val.indexOf('Over') === 0) data.cell.styles.textColor = [190,60,40];
+          else if(val === 'Pending') data.cell.styles.textColor = [140,140,140];
+        }
+      }
+    });
+
+    const filenameSafeId = String(snapshot.containerId).replace(/[^A-Za-z0-9_-]/g, '');
+    doc.save(`outbound-audit-${filenameSafeId}-${timestamp()}.pdf`);
+  }
+
+  function focusContainerInput(){
+    const inp = el('containerInput');
+    if(inp && !inp.disabled) setTimeout(()=>inp.focus(), 30);
+  }
+  function focusScanInput(){
+    const inp = el('scanInput');
+    if(inp) setTimeout(()=>inp.focus(), 30);
+  }
+
+  function resolveToSku(rawCode){
+    const nc = normCode(rawCode);
+    if(upcMap[nc]) return upcMap[nc];
+    return nc;
+  }
+
+  function findMatch(rawCode){
+    const resolved = resolveToSku(rawCode);
+    let candidates = items.filter(i => normCode(i.sku) === resolved);
+    if(candidates.length){
+      const open = candidates.find(i => i.expected - i.scanned > 0);
+      return { item: open || candidates[0] };
+    }
+    candidates = items.filter(i => resolved.includes(normCode(i.sku)) || normCode(i.sku).includes(resolved));
+    if(candidates.length){
+      candidates.sort((a,b) => normCode(b.sku).length - normCode(a.sku).length);
+      const open = candidates.find(i => i.expected - i.scanned > 0);
+      return { item: open || candidates[0] };
+    }
+    return null;
+  }
+
+  function processScan(code){
+    const trimmed = String(code||'').trim();
+    if(!trimmed) return;
+
+    const qty = Math.max(parseInt(el('scanQtyInput').value, 10) || 1, 1);
+
+    const match = findMatch(trimmed);
+    if(!match){
+      logScan(trimmed, 'err', 'No matching SKU on manifest', null, 0);
+      setFeedback('err', 'Unknown code', trimmed);
+      renderLog();
+      return;
+    }
+
+    applyUnits(match.item, qty, trimmed);
+    renderAllAfterScan();
+    resetScanQty();
+  }
+
+  function resetScanQty(){
+    el('scanQtyInput').value = 1;
+  }
+
+  function applyUnits(item, count, code){
+    touchSession();
+    item.scanned += count;
+    const remaining = Math.max(item.expected - item.scanned, 0);
+    const over = Math.max(item.scanned - item.expected, 0);
+    const result = over > 0 ? 'warn' : 'ok';
+    const detail = over > 0
+      ? `${item.sku} — +${count} — ${over} over`
+      : `${item.sku} — +${count} — ${remaining} left`;
+    logScan(code, result, detail, item.id, count);
+    if(over > 0){
+      setFeedback('warn', `Over-scanned ${item.sku}`, `+${count} pushed it ${over} past expected`);
+    }else{
+      setFeedback('ok', `Matched ${item.sku}`, `+${count} — ${remaining} of ${item.expected} remaining`);
+    }
+    flashRow(item.id);
+  }
+
+  function logScan(code, result, detail, itemId, units){
+    const time = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    scanLog.push({ time, code, result, detail, itemId, units });
+  }
+  function setFeedback(kind, title, sub){
+    const box = el('scanFeedback');
+    box.className = 'scan-feedback ' + kind;
+    box.innerHTML = `<span>${escapeHtml(title)}</span>${sub ? `<span class="fb-badge">${escapeHtml(sub)}</span>` : ''}`;
+  }
+  function flashRow(itemId){
+    const row = document.querySelector(`tr[data-item="${itemId}"]`);
+    if(row){ row.classList.remove('just-scanned'); void row.offsetWidth; row.classList.add('just-scanned'); }
+  }
+
+  function undoLastScan(){
+    for(let i = scanLog.length - 1; i >= 0; i--){
+      const entry = scanLog[i];
+      if(entry.itemId && entry.units){
+        const item = items.find(it => it.id === entry.itemId);
+        if(item) item.scanned = Math.max(item.scanned - entry.units, 0);
+        scanLog.splice(i, 1);
+        renderAllAfterScan();
+        setFeedback('warn', 'Last scan undone', entry.code);
+        return;
+      }
+    }
+    setFeedback('warn', 'Nothing to undo', '');
+  }
+
+  function adjustItem(id, delta){
+    const item = items.find(i => i.id === id);
+    if(!item) return;
+    touchSession();
+    item.scanned = Math.max(item.scanned + delta, 0);
+    renderStats(); renderManifestTable(currentFilter());
+  }
+
+  function currentFilter(){ const f = el('tableSearch'); return f ? f.value : ''; }
+  function renderAllAfterScan(){
+    renderStats(); renderManifestTable(currentFilter()); renderLog();
+  }
+
+  function renderStats(){
+    const totalLines = items.length;
+    const doneLines = items.filter(i => i.expected - i.scanned <= 0).length;
+    const totalExpected = items.reduce((s,i)=>s+i.expected,0);
+    const totalScanned = items.reduce((s,i)=>s+Math.min(i.scanned,i.expected),0);
+    const totalOver = items.reduce((s,i)=>s+Math.max(i.scanned-i.expected,0),0);
+    const totalRemaining = totalExpected - totalScanned;
+    const pct = totalExpected ? Math.round((totalScanned/totalExpected)*100) : 0;
+
+    el('statLines').textContent = `${doneLines}/${totalLines}`;
+    el('statExpected').textContent = totalExpected;
+    el('statScanned').textContent = totalScanned;
+    el('statRemaining').textContent = totalRemaining;
+    el('progressFill').style.width = pct + '%';
+    el('statRemainingBox').classList.toggle('complete', totalRemaining === 0);
+
+    const banner = el('overBanner');
+    if(totalOver > 0){
+      banner.hidden = false;
+      banner.textContent = `${totalOver} unit${totalOver===1?'':'s'} scanned beyond expected quantity — check for double scans.`;
+    }else{
+      banner.hidden = true;
+    }
+  }
+
+  function statusFor(item){
+    const remaining = item.expected - item.scanned;
+    if(remaining < 0) return {cls:'over', label:'Over +'+(-remaining)};
+    if(remaining === 0) return {cls:'complete', label:'Complete'};
+    if(item.scanned > 0) return {cls:'progress', label:'In progress'};
+    return {cls:'pending', label:'Pending'};
+  }
+
+  function renderManifestTable(filterText){
+    const body = el('manifestBody');
+    body.innerHTML = '';
+    const q = (filterText||'').toLowerCase().trim();
+    const rows = items.filter(i => !q || i.sku.toLowerCase().includes(q) || (i.description||'').toLowerCase().includes(q));
+
+    if(rows.length === 0){
+      body.innerHTML = `<tr class="empty-row"><td colspan="8">${items.length ? 'No lines match "'+escapeHtml(filterText)+'"' : 'No manifest lines.'}</td></tr>`;
+      return;
+    }
+
+    body.innerHTML = rows.map(item => {
+      const remaining = item.expected - item.scanned;
+      const over = Math.max(item.scanned-item.expected,0);
+      const st = statusFor(item);
+      const upc = skuToUpc[normCode(item.sku)];
+      return `
+        <tr data-item="${item.id}">
+          <td class="sku-cell">${escapeHtml(item.sku)}</td>
+          <td class="upc-cell">${upc ? escapeHtml(upc) : '—'}</td>
+          <td class="desc-cell">${escapeHtml(item.description)}</td>
+          <td class="qty-cell">${item.expected}</td>
+          <td class="qty-cell">${item.scanned}${over ? ` <span style="color:var(--red)">(+${over})</span>` : ''}</td>
+          <td class="remaining-cell ${remaining<=0?'zero':''} ${over>0?'over':''}">${Math.max(remaining,0)}</td>
+          <td><span class="status-chip ${st.cls}">${st.label}</span></td>
+          <td>
+            <div class="row-controls">
+              <button class="mini-btn" data-adjust="${item.id}" data-delta="-1" title="Remove one unit">&minus;</button>
+              <button class="mini-btn" data-adjust="${item.id}" data-delta="1" title="Add one unit manually">+</button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    body.querySelectorAll('[data-adjust]').forEach(btn=>{
+      btn.addEventListener('click', ()=> adjustItem(btn.dataset.adjust, parseInt(btn.dataset.delta,10)));
+    });
+  }
+
+  function renderLog(){
+    const list = el('logList');
+    if(scanLog.length === 0){ list.innerHTML = '<div class="log-empty">No scans yet.</div>'; return; }
+    list.innerHTML = scanLog.slice(-40).map(l => `
+      <div class="log-item ${l.result}">
+        <span class="t">${l.time}</span>
+        <span class="c">${escapeHtml(l.code)}</span>
+        <span class="r">${escapeHtml(l.detail)}</span>
+      </div>
+    `).join('');
+  }
+
+  function renderAll(){ renderStats(); renderManifestTable(currentFilter()); renderLog(); }
+
+  function saveProgress(){
+    const snapshot = { savedAt: new Date().toISOString(), currentContainerId, items, scanLog, activeSession };
+    downloadText(JSON.stringify(snapshot, null, 2), `outbound-audit-progress-${timestamp()}.json`, 'application/json');
+  }
+  function loadProgress(file){
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try{
+        const snap = JSON.parse(e.target.result);
+        if(!Array.isArray(snap.items)) throw new Error('File does not look like a saved progress file.');
+        items = snap.items;
+        scanLog = snap.scanLog || [];
+        currentContainerId = snap.currentContainerId || 'RESUMED';
+        if(snap.activeSession && snap.activeSession.containerId){
+          activeSession = {
+            containerId: snap.activeSession.containerId,
+            user: snap.activeSession.user || currentUser,
+            start: new Date(snap.activeSession.start),
+            lastActivity: new Date()
+          };
+          startSessionTimer();
+        }else{
+          startSession(currentContainerId);
+        }
+        launchAuditWorkspace();
+      }catch(err){
+        toast('Could not load that progress file: ' + err.message, true);
+      }
+    };
+    reader.readAsText(file);
+  }
+  function exportReport(){
+    const rows = [['Container ID','SKU','UPC','Description','Expected Qty','Scanned Qty','Over-scanned','Remaining','Status']];
+    items.forEach(i=>{
+      const remaining = Math.max(i.expected - i.scanned, 0);
+      const over = Math.max(i.scanned - i.expected, 0);
+      const upc = skuToUpc[normCode(i.sku)] || '';
+      rows.push([currentContainerId, i.sku, upc, i.description, i.expected, i.scanned, over, remaining, statusFor(i).label]);
+    });
+    const csv = rows.map(r => r.map(csvEscape).join(',')).join('\n');
+    downloadText(csv, `outbound-audit-report-${timestamp()}.csv`, 'text/csv');
+  }
+
+  function csvEscape(v){
+    const s = String(v===undefined||v===null?'':v);
+    return /[",\n]/.test(s) ? '"' + s.replace(/"/g,'""') + '"' : s;
+  }
+  function downloadText(text, filename, mime){
+    const blob = new Blob([text], {type: mime});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  }
+  function timestamp(){
+    const d = new Date();
+    const pad = n => String(n).padStart(2,'0');
+    return `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}`;
+  }
+  function escapeHtml(s){
+    return String(s===undefined||s===null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function openUpcModal(){ el('upcModalOverlay').classList.remove('hidden'); renderUpcTable(''); }
+  function closeUpcModal(){ el('upcModalOverlay').classList.add('hidden'); }
+
+  const datasetDz = el('datasetDropzone');
+  datasetDz.addEventListener('dragover', e => { e.preventDefault(); datasetDz.classList.add('drag'); });
+  datasetDz.addEventListener('dragleave', () => datasetDz.classList.remove('drag'));
+  datasetDz.addEventListener('drop', e => { e.preventDefault(); datasetDz.classList.remove('drag'); if(e.dataTransfer.files[0]) handleDatasetFile(e.dataTransfer.files[0]); });
+  el('datasetInput').addEventListener('change', e => { if(e.target.files[0]) handleDatasetFile(e.target.files[0]); });
+  el('clearDatasetBtn').addEventListener('click', clearDataset);
+  el('datasetRefreshBtn').addEventListener('click', () => pullManifestFromSheet(false));
+
+  el('containerInput').addEventListener('keydown', e => {
+    if(e.key === 'Enter'){
+      e.preventDefault();
+      const val = el('containerInput').value;
+      scanContainer(val);
+    }
+  });
+
+  el('duplicateAuditAgainBtn').addEventListener('click', () => {
+    closeDuplicateAuditModal();
+    if(pendingContainerLaunch){
+      const { cid, rows } = pendingContainerLaunch;
+      pendingContainerLaunch = null;
+      launchContainerFromRows(cid, rows);
+    }
+  });
+  el('duplicateAuditBackBtn').addEventListener('click', () => {
+    closeDuplicateAuditModal();
+    pendingContainerLaunch = null;
+    el('containerInput').value = '';
+    focusContainerInput();
+  });
+  el('duplicateAuditModalClose').addEventListener('click', () => {
+    closeDuplicateAuditModal();
+    pendingContainerLaunch = null;
+    focusContainerInput();
+  });
+  el('duplicateAuditModalOverlay').addEventListener('click', e => {
+    if(e.target === el('duplicateAuditModalOverlay')){
+      closeDuplicateAuditModal();
+      pendingContainerLaunch = null;
+      focusContainerInput();
+    }
+  });
+
+  el('changeContainerBtn').addEventListener('click', changeContainer);
+  el('changeContainerBtn2').addEventListener('click', changeContainer);
+  el('finishAuditBtn').addEventListener('click', finishAudit);
+  el('finishAuditBtn2').addEventListener('click', finishAudit);
+
+  el('scanInput').addEventListener('keydown', e => {
+    if(e.key === 'Enter'){
+      e.preventDefault();
+      const val = el('scanInput').value;
+      el('scanInput').value = '';
+      processScan(val);
+      focusScanInput();
+    }
+  });
+  el('scanQtyInput').addEventListener('focus', () => el('scanQtyInput').select());
+  el('scanQtyInput').addEventListener('keydown', e => {
+    if(e.key === 'Enter'){
+      e.preventDefault();
+      focusScanInput();
+    }
+  });
+  document.addEventListener('click', (e) => {
+    if(!currentUser) return;
+    if(!el('auditWorkspace').hidden
+      && !e.target.closest('.mini-btn') && !e.target.closest('#tableSearch') && !e.target.closest('.btn')
+      && !e.target.closest('.modal-overlay')
+      && !e.target.closest('#scanQtyInput')){
+      focusScanInput();
+    }
+    if(el('containerHero') && !el('containerHero').hidden
+      && !e.target.closest('.btn') && !e.target.closest('.notfound-box')){
+      focusContainerInput();
+    }
+  });
+  el('tableSearch').addEventListener('input', () => renderManifestTable(el('tableSearch').value));
+
+  el('undoBtn').addEventListener('click', undoLastScan);
+
+  el('saveProgressBtn').addEventListener('click', saveProgress);
+  el('loadProgressBtn').addEventListener('click', () => el('progressInput').click());
+  el('progressInput').addEventListener('change', e => { if(e.target.files[0]) loadProgress(e.target.files[0]); });
+  el('exportBtn').addEventListener('click', exportReport);
+
+  el('upcTopbarBtn').addEventListener('click', openUpcModal);
+  el('upcModalClose').addEventListener('click', closeUpcModal);
+  el('upcModalOverlay').addEventListener('click', e => { if(e.target === el('upcModalOverlay')) closeUpcModal(); });
+
+  const upcDz = el('upcDropzone');
+  upcDz.addEventListener('dragover', e => { e.preventDefault(); upcDz.classList.add('drag'); });
+  upcDz.addEventListener('dragleave', () => upcDz.classList.remove('drag'));
+  upcDz.addEventListener('drop', e => { e.preventDefault(); upcDz.classList.remove('drag'); if(e.dataTransfer.files[0]) handleUpcBulkFile(e.dataTransfer.files[0]); });
+  el('upcBulkInput').addEventListener('change', e => { if(e.target.files[0]) handleUpcBulkFile(e.target.files[0]); });
+
+  el('upcFormAddBtn').addEventListener('click', () => {
+    const sku = el('upcFormSku').value.trim();
+    const upc = el('upcFormUpc').value.trim();
+    if(!sku || !upc){ toast('Enter both a SKU and a UPC.', true); return; }
+    addUpcMapping(sku, upc);
+    el('upcFormSku').value = ''; el('upcFormUpc').value = '';
+    renderUpcTable(el('upcSearch').value);
+    renderUpcTile();
+    renderManifestTable(currentFilter());
+    if(!sheetSyncConfigured()){
+      toast('Mapping saved.');
+    }else{
+      pushUpcMapToSheet().then(res => {
+        toast(res && res.ok ? 'Mapping saved and shared with everyone.' : 'Mapping saved locally, but sharing it failed (check your connection).', !(res && res.ok));
+      });
+    }
+  });
+  el('upcSearch').addEventListener('input', () => renderUpcTable(el('upcSearch').value));
+  el('upcSaveLibBtn').addEventListener('click', saveUpcLibrary);
+  el('upcRefreshBtn').addEventListener('click', () => pullUpcMapFromSheet(false));
+
+  /* ---- auth events ---- */
+  el('loginBtn').addEventListener('click', () => attemptLogin(el('loginUsername').value, el('loginPassword').value));
+  el('loginPassword').addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); attemptLogin(el('loginUsername').value, el('loginPassword').value); } });
+  el('loginUsername').addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); el('loginPassword').focus(); } });
+  el('logoutBtn').addEventListener('click', logout);
+
+  /* ---- settings events ---- */
+  el('settingsTopbarBtn').addEventListener('click', openSettingsModal);
+  el('settingsModalClose').addEventListener('click', closeSettingsModal);
+  el('settingsModalOverlay').addEventListener('click', e => { if(e.target === el('settingsModalOverlay')) closeSettingsModal(); });
+  el('settingsUnlockBtn').addEventListener('click', unlockSettings);
+  el('settingsUnlockInput').addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); unlockSettings(); } });
+  el('userFormAddBtn').addEventListener('click', () => {
+    addUser(el('userFormUsername').value, el('userFormPassword').value);
+    el('userFormUsername').value = ''; el('userFormPassword').value = '';
+  });
+  el('userFormPassword').addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); addUser(el('userFormUsername').value, el('userFormPassword').value); el('userFormUsername').value=''; el('userFormPassword').value=''; } });
+  el('settingsChangePasswordBtn').addEventListener('click', () => changeSettingsPassword(el('settingsNewPassword').value));
+  el('saveUsersBtn').addEventListener('click', saveUsersFile);
+  el('usersRefreshBtn').addEventListener('click', () => pullUsersFromSheet(false));
+  el('loadUsersBtn').addEventListener('click', () => el('usersFileInput').click());
+  el('usersFileInput').addEventListener('change', e => { if(e.target.files[0]) loadUsersFile(e.target.files[0]); });
+
+  /* ---- productivity events ---- */
+  el('exportProductivityBtn').addEventListener('click', exportProductivity);
+
+  renderUpcTile();
+  checkPdfLibrary();
+  initSyncStatus();
+  if(sheetSyncConfigured()) pullUsersFromSheet(true);
+  focusLoginInput();
+
+})();
+</script>
+</body>
+</html>
